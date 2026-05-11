@@ -6,7 +6,7 @@ use SlyDevil\Env;
 
 class Connection {
     
-  protected static \mysqli $db;
+  protected static ?\mysqli $db = NULL;
 
   public function __construct() {    
     self::connect();

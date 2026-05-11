@@ -4,7 +4,7 @@ namespace SlyDevil;
 		
 class Session {
 
-	public const PASSWORD_SEED = 'SLY-DEVIL-HOST-IS-THE-BEST';
+	public const PASSWORD_SEED = 'SLYDEVILHOST';
 
 	public const SESSION_MAX_AGE = 3600;
 

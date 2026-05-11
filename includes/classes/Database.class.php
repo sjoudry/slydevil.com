@@ -1,10 +1,10 @@
 <?php
 
-namespace SlyDevil\Database;
+namespace SlyDevil;
 
 use SlyDevil\Env;
 
-class Connection {
+class Database {
     
   protected static ?\mysqli $db = NULL;
 
@@ -45,10 +45,15 @@ class Connection {
     return self::$db->insert_id;
   }
     
-  public function query($sql) {
+  public function query(string $sql, array $args = []) {
     self::connect();
 
-    return self::$db->query($sql);
+    $sql_args = [];
+    foreach ($args as $arg) {
+      $sql_args[] = self::escape($arg);
+    }
+
+    return self::$db->query(vsprintf($sql, $sql_args));
   }
     
   public static function set_time_zone() {

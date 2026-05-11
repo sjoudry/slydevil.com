@@ -1,6 +1,6 @@
 <?php
 
-use SlyDevil\Database\Query;
+use SlyDevil\Database;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
@@ -41,18 +41,19 @@ $fieldset = Fieldset::create()
 $form->addElement($fieldset);
  
 if ($form->submitted() && $form->validated()) {
-  $result = Query::create(
+  $db = new Database();
+  $result = $db->query(
     "SELECT user_first_name, user_id, user_username FROM user WHERE user_username = '%s'",
     [
       strtolower($_REQUEST['username'])
     ]
-  )->result();
+  );
     
   if ($result->num_rows == 1) {
     $user = $result->fetch_assoc();
     $password = Session::generateRandomString(5);
         
-    Query::create(
+    $db->query(
       "UPDATE user SET user_password = '%s' WHERE user_id = %s",
       [
         Session::cryptPassword($password),

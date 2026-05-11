@@ -2,28 +2,27 @@
 
 namespace SlyDevil\Form\Element;
 
-class Button extends Base {
+use SlyDevil\Env;
+
+class Select extends Base {
 
   protected array $availableAttributes = [
-    'accesskey',
     'class',
     'dir',
     'disabled',
     'id',
     'lang',
+    'multiple',
     'name',
+    'size',
     'style',
     'tabindex',
     'title',
-    'type',
-    'value',
   ];
 
   protected array $availableEvents = [
-    'blur',
     'click',
     'dblclick',
-    'focus',
     'keydown',
     'keypress',
     'keyup',
@@ -35,7 +34,7 @@ class Button extends Base {
   ];
 
   public function __construct() {
-    $this->elementType = 'button';
+    $this->elementType = 'select';
 
     return $this;
   }
@@ -46,13 +45,19 @@ class Button extends Base {
     $output .= $this->returnHTMLPreText();
     $output .= $this->returnHTMLDivBegin();
     $output .= $this->returnHTMLLabelLeft($this);
-    $output .= '<button';
+    $output .= '<select';
     $output .= $this->returnHTMLAttributes();
-    $output .= '/>' . $this->attributes['value'] . '</button>';
+    $output .= '/>';
+
+    $output .= $this->returnHTMLOptions();
+
+    $output .= '</select>';
+    $output .= $this->returnHTMLRequired();
     $output .= $this->returnHTMLLabelRight($this);
-    $output .= $this->returnHTMLDescription();
     $output .= $this->returnHTMLDivEnd();
     $output .= $this->returnHTMLPostText();
+    $output .= $this->returnHTMLDescription();
+    $output .= $this->returnHTMLErrorsInline();
 
     return $output;
   }
@@ -61,35 +66,35 @@ class Button extends Base {
 		if (!$this->configValidated) {
 			$this->configValidated = TRUE;
 
-      $this->validateConfigAccesskey();
       $this->validateConfigDir();
       $this->validateConfigDisabled();
+      $this->validateConfigMultiple();
+      $this->validateConfigSize();
       $this->validateConfigTabindex();
-
-      if ($this->getType() == NULL) {
-          $this->setType(self::FORM_ELEMENT_TYPE_SUBMIT);
-      }
-      else {
-        if (
-          $this->getType() != self::FORM_ELEMENT_TYPE_BUTTON &&
-          $this->getType() != self::FORM_ELEMENT_TYPE_RESET &&
-          $this->getType() != self::FORM_ELEMENT_TYPE_SUBMIT
-        ) {
-          $this->setType(self::FORM_ELEMENT_TYPE_SUBMIT);
-        }
-      }
 
       if ($this->getName() == NULL) {
         $this->errors[] = "Config Error: Attribute 'name' is required";
       }
-
-      if ($this->getValue() == NULL) {
-        $this->errors[] = "Config Error: Attribute 'value' is missing and is required";
+      elseif (isset($_REQUEST[$this->getName()])) {
+        if (gettype($_REQUEST[$this->getName()]) == 'array') {
+					$select_options = [];
+          foreach ($_REQUEST[$this->getName()] as $selected_value) {
+						$select_options[] = Env::filterVariable($selected_value);
+          }
+          $this->selected = $select_options;
+        }
+        else {
+					$this->selected = Env::filterVariable($_REQUEST[$this->getName()]);
+				}
       }
 
-      if ($this->getId() == NULL) {
-        $this->setId($this->getName());
-      }
+			if ($this->getId() == NULL) {
+				$this->setId($this->getName());
+			}
+
+			if ($this->getMultiple() == self::FORM_ELEMENT_MULTIPLE) {
+        $this->setName($this->getName() . '[]');
+			}
     }
   }
 

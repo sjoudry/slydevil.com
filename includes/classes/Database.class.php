@@ -45,7 +45,7 @@ class Database {
     return self::$db->insert_id;
   }
     
-  public function query(string $sql, array $args = []) {
+  public static function query(string $sql, array $args = []) {
     self::connect();
 
     $sql_args = [];

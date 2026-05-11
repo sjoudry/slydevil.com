@@ -1,6 +1,6 @@
 <?php
 
-use SlyDevil\Database\Query;
+use SlyDevil\Database;
 use SlyDevil\Login;
 use SlyDevil\Theme;
 
@@ -11,7 +11,7 @@ Login::handleLogin('user');
 print Theme::htmlDashboardTop('Sly Devil :: Dashboard');
 
 if (Login::$userId == 1) {
-  $result = Query::create(
+  $result = Database::query(
     "SELECT 'users' AS type, COUNT(*) AS count FROM user WHERE user_date_deleted IS NULL
     UNION
     SELECT 'packages' AS type, COUNT(*) AS count FROM package WHERE package_date_deleted IS NULL
@@ -23,7 +23,7 @@ if (Login::$userId == 1) {
     SELECT 'services' AS type, COUNT(*) AS count FROM service WHERE service_date_deleted IS NULL
     UNION
     SELECT 'invoices' AS type, COUNT(*) AS count FROM invoice WHERE invoice_date_deleted IS NULL"
-  )->result();
+  );
 
   if ($result->num_rows) {
     print "<table border='0' cellpadding='2' cellspacing='0' width='100%'>\n";
@@ -37,21 +37,21 @@ if (Login::$userId == 1) {
   }
 }
 else {
-  $result = Query::create(
+  $result = Database::query(
     'SELECT * FROM user JOIN account USING (account_id) WHERE user_id = %s',
     [
       Login::$userId
     ]
-  )->result();
+  );
     
   $account = $result->fetch_assoc();
 
-  $result = Query::create(
+  $result = Database::query(
     'SELECT * FROM invoice JOIN user USING (account_id) WHERE invoice_date_deleted IS NULL AND user_id = %s ORDER BY invoice_number DESC',
     [
       Login::$userId
     ]
-  )->result();
+  );
 
   if ($result->num_rows) {
     $invoices = [];
@@ -61,24 +61,24 @@ else {
       $last_invoice = $row['invoice_date_added'];
     }
     
-    $result = Query::create(
+    $result = Database::query(
       'SELECT * FROM invoice_data WHERE invoice_id IN (%s)',
       [
         implode(',', array_keys($invoices))
       ]
-    )->result();
+    );
 
     $invoice_data = array();
     while ($row = $result->fetch_assoc()) {
       $invoice_data[$row['invoice_id']][] = $row;
     }
     
-    $result = Query::create(
+    $result = Database::query(
       'SELECT invoice_id, payment_amount FROM payment WHERE invoice_id IN (%s)',
       [
         implode(',', array_keys($invoices))
       ]
-    )->result();
+    );
 
     $payments = array();
     $last_payment = 'N/A';

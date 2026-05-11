@@ -41,8 +41,7 @@ $fieldset = Fieldset::create()
 $form->addElement($fieldset);
  
 if ($form->submitted() && $form->validated()) {
-  $db = new Database();
-  $result = $db->query(
+  $result = Database::query(
     "SELECT user_first_name, user_id, user_username FROM user WHERE user_username = '%s'",
     [
       strtolower($_REQUEST['username'])
@@ -53,7 +52,7 @@ if ($form->submitted() && $form->validated()) {
     $user = $result->fetch_assoc();
     $password = Session::generateRandomString(5);
         
-    $db->query(
+    Database::query(
       "UPDATE user SET user_password = '%s' WHERE user_id = %s",
       [
         Session::cryptPassword($password),

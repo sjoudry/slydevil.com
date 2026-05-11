@@ -2,25 +2,26 @@
 
 namespace SlyDevil\Form\Element;
 
-class Button extends Base {
+class Checkbox extends Base {
 
   protected array $availableAttributes = [
     'accesskey',
+    'checked',
     'class',
     'dir',
     'disabled',
     'id',
     'lang',
     'name',
-    'style',
+    'readonly',
     'tabindex',
     'title',
-    'type',
     'value',
   ];
 
   protected array $availableEvents = [
     'blur',
+    'change',
     'click',
     'dblclick',
     'focus',
@@ -32,10 +33,11 @@ class Button extends Base {
     'mouseout',
     'mouseover',
     'mouseup',
+    'select',
   ];
 
   public function __construct() {
-    $this->elementType = 'button';
+    $this->elementType = 'checkbox';
 
     return $this;
   }
@@ -46,13 +48,15 @@ class Button extends Base {
     $output .= $this->returnHTMLPreText();
     $output .= $this->returnHTMLDivBegin();
     $output .= $this->returnHTMLLabelLeft($this);
-    $output .= '<button';
+    $output .= "<input type='checkbox'";
     $output .= $this->returnHTMLAttributes();
-    $output .= '/>' . $this->attributes['value'] . '</button>';
+    $output .= '/>';
+    $output .= $this->returnHTMLRequired();
     $output .= $this->returnHTMLLabelRight($this);
     $output .= $this->returnHTMLDescription();
     $output .= $this->returnHTMLDivEnd();
     $output .= $this->returnHTMLPostText();
+    $output .= $this->returnHTMLErrorsInline();
 
     return $output;
   }
@@ -62,25 +66,17 @@ class Button extends Base {
 			$this->configValidated = TRUE;
 
       $this->validateConfigAccesskey();
+      $this->validateConfigChecked();
       $this->validateConfigDir();
       $this->validateConfigDisabled();
+      $this->validateConfigReadonly();
       $this->validateConfigTabindex();
-
-      if ($this->getType() == NULL) {
-          $this->setType(self::FORM_ELEMENT_TYPE_SUBMIT);
-      }
-      else {
-        if (
-          $this->getType() != self::FORM_ELEMENT_TYPE_BUTTON &&
-          $this->getType() != self::FORM_ELEMENT_TYPE_RESET &&
-          $this->getType() != self::FORM_ELEMENT_TYPE_SUBMIT
-        ) {
-          $this->setType(self::FORM_ELEMENT_TYPE_SUBMIT);
-        }
-      }
 
       if ($this->getName() == NULL) {
         $this->errors[] = "Config Error: Attribute 'name' is required";
+      }
+      else if (isset($_REQUEST[$this->getName()]) && $_REQUEST[$this->getName()] == $this->getValue()) {
+        $this->setChecked(self::FORM_ELEMENT_CHECKED);
       }
 
       if ($this->getValue() == NULL) {

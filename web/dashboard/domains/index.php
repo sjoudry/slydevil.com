@@ -10,14 +10,14 @@ use SlyDevil\Theme;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin("admin");
+Login::handleLogin('admin');
 
-print Theme::htmlDashboardTop("Hosting :: Domains");
+print Theme::htmlDashboardTop('Hosting :: Domains');
 print "<div class='button'><a href='edit.php'><i class='fa fa-plus'></i> Add New Domain</a></div>\n";
 
 // filter form prep
 $result = Database::query(
-  "SELECT
+  'SELECT
     account_id_public,
     account_name
   FROM
@@ -25,29 +25,29 @@ $result = Database::query(
   WHERE
     account_date_deleted IS NULL
   ORDER BY
-    account_name"
+    account_name'
 );
-$accounts = ["0" => "-- Select Account --"];
+$accounts = ['0' => '-- Select Account --'];
 while ($row = $result->fetch_assoc()) {
-  $accounts[$row["account_id_public"]] = $row["account_name"];
+  $accounts[$row['account_id_public']] = $row['account_name'];
 }
 
 $form = Form::create()
-  ->setAction("index.php")
-  ->setName("domains_filter");
+  ->setAction('index.php')
+  ->setName('domains_filter');
 
 $account = Select::create()
-  ->setName("account_id")
+  ->setName('account_id')
   ->setOptions($accounts)
-  ->addLabel("Account")
-  ->setClass("form-control");
+  ->addLabel('Account')
+  ->setClass('form-control');
 
 $button = Button::create()
-  ->setName("domains_filter_submit")
-  ->setValue("Filter");
+  ->setName('domains_filter_submit')
+  ->setValue('Filter');
     
 $fieldset = Fieldset::create()
-  ->setId("domains_filter_fieldset")
+  ->setId('domains_filter_fieldset')
   ->setLegend("<i class='fa fa-filter'></i> Filter Domains")
   ->setCollapsible(TRUE)
   ->setCollapsed((isset($_REQUEST['account_id'])) ? FALSE : TRUE)
@@ -57,17 +57,17 @@ $fieldset = Fieldset::create()
 $form->addElement($fieldset);
 
 if ($form->submitted()) {
-  $account->setSelected($_REQUEST["account_id"]);
+  $account->setSelected($_REQUEST['account_id']);
 
   $button2 = Button::create()
-    ->setName("domains_filter_reset")
-    ->setValue("Reset");
+    ->setName('domains_filter_reset')
+    ->setValue('Reset');
         
   $fieldset->addElement($button2);
 }
 
-if (isset($_REQUEST['domains_filter_reset']) || (isset($_REQUEST["account_id"]) && empty($_REQUEST["account_id"]))) {
-  header("Location: /dashboard/domains/");
+if (isset($_REQUEST['domains_filter_reset']) || (isset($_REQUEST['account_id']) && empty($_REQUEST['account_id']))) {
+  header('Location: /dashboard/domains/');
   exit;
 }
 
@@ -75,7 +75,7 @@ print $form->returnHTML();
 
 // retrive domains
 $args = [];
-$sql = "
+$sql = '
   SELECT
     domain_id_public,
     domain_name,
@@ -90,12 +90,12 @@ $sql = "
     (account_id)
   WHERE
     domain_date_deleted IS NULL
-";
+';
 if ($form->submitted()) {
   $sql .= "AND account_id_public = '%s'";
-  $args[] = $_REQUEST["account_id"];
+  $args[] = $_REQUEST['account_id'];
 }
-$sql .= "ORDER BY domain_name";
+$sql .= 'ORDER BY domain_name';
 
 $result = Database::query($sql, $args);
 
@@ -109,7 +109,7 @@ if ($result->num_rows) {
   print "<th>Date Added</th>\n";
   print "</tr>\n";
 
-  $stripe = "even";
+  $stripe = 'even';
   while ($row = $result->fetch_assoc()) {
     print "<tr>\n";
     print "<td class='" . $stripe . "'><a href='edit.php?id=" . $row["domain_id_public"] . "'><i class='fa fa-pencil'></i></a></td>\n";

@@ -252,7 +252,7 @@ if ($form->submitted() && $form->validated()) {
         "INSERT INTO user (user_id_public, user_username, user_first_name, user_last_name, account_id, user_password, user_date_added) VALUES
         ('%s', '%s', '%s', '%s', %s, '%s', NOW())",
         [
-          Session::cryptPassword($_REQUEST['user_username']),
+          Session::cryptPassword($_REQUEST['user_username'] . time()),
           $_REQUEST['user_username'],
           $_REQUEST['user_first_name'],
           $_REQUEST['user_last_name'],

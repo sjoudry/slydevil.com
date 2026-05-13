@@ -80,7 +80,7 @@ else {
       ]
     );
 
-    $payments = array();
+    $payments = [];
     $last_payment = 'N/A';
     while ($row = $result->fetch_assoc()) {
       $payments[$row['invoice_id']][] = $row['payment_amount'];
@@ -100,8 +100,10 @@ else {
       $total += $calculated_gst + $calculated_pst;
             
       $paid = 0;
-      foreach ($payments[$id] as $payment) {
-        $paid += $payment;
+      if (isset($payments[$id])) {
+        foreach ($payments[$id] as $payment) {
+          $paid += $payment;
+        }
       }
             
       $balance = round($total - $paid, 2);
@@ -176,8 +178,10 @@ else {
       $total += $calculated_gst + $calculated_pst;
             
       $paid = 0;
-      foreach ($payments[$id] as $payment) {
-        $paid += $payment;
+      if (isset($payments[$id])) {
+        foreach ($payments[$id] as $payment) {
+          $paid += $payment;
+        }
       }
             
       $balance = round($total - $paid, 2);

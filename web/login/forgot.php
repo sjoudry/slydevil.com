@@ -1,61 +1,52 @@
 <?php
 
-use SlyDevil\Database;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
 use SlyDevil\Form\Element\Html;
-use SlyDevil\Form\Element\Text;
-use SlyDevil\Session;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../includes/init.inc.php');
 
-$form = Form::create()
-  ->setAction('forgot.php')
-  ->setName('forgot');
+$main = new Main();
 
-$username = Text::create()
-  ->setName('username')
-  ->setMaxlength(255)
+$form = Form::create('forgot');
+
+$username = Input::create('text', 'username')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Email Address')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorEmail();
+  ->addValidator('existance')
+  ->addValidator('email');
 
-$login_link = HTML::create()
-  ->setName('login_link')
-  ->setContent("<a href='index.php'>Back to Login</a>");
+$login_link = HTML::create('login_link', '<a href="index.php">Back to Login</a>');
 
-$button = Button::create()
-  ->setName('reset_submit')
-  ->setValue('Reset Password');
+$button = Button::create('reset_submit', 'Reset Password', Button::TYPE_SUBMIT);
 
-$fieldset = Fieldset::create()
-  ->setId('reset_fieldset')
-  ->setLegend('Forgot/Reset Password')
+$fieldset = Fieldset::create('reset_fieldset', 'Forgot/Reset Password')
   ->addElement($username)
   ->addElement($button)
   ->addElement($login_link);
 
 $form->addElement($fieldset);
- 
+
 if ($form->submitted() && $form->validated()) {
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT user_first_name, user_id, user_username FROM user WHERE user_username = '%s'",
     [
-      strtolower($_REQUEST['username'])
+      strtolower($main->getSessionManager()->filterVariable($_REQUEST['username']))
     ]
   );
-    
+
   if ($result->num_rows == 1) {
     $user = $result->fetch_assoc();
-    $password = Session::generateRandomString(5);
-        
-    Database::query(
+    $password = $main->getSessionManager()->generateRandomString(5);
+
+    $main->getDatabase()->query(
       "UPDATE user SET user_password = '%s' WHERE user_id = %s",
       [
-        Session::cryptPassword($password),
+        $main->getSessionManager()->cryptPassword($password),
         $user['user_id']
       ]
     );
@@ -63,9 +54,9 @@ if ($form->submitted() && $form->validated()) {
     $message = <<<EOS
 <html>
     <body>
-        
+
         <br /><br />
-        
+
         <table border='0' cellpadding='2' cellspacing='1' width='600' align='center'>
             <tr>
                 <td valign='top' width='600' style='font-family: verdana, geneva, sans-serif; font-size: 14px; line-height: 20px;'>
@@ -79,9 +70,9 @@ if ($form->submitted() && $form->validated()) {
                 </td>
             </tr>
         </table>
-        
+
         <br /><br />
-    
+
     </body>
 </html>
 EOS;
@@ -113,10 +104,10 @@ EOS;
     $_SESSION['messages']['info'][] = 'Password Reset email has been sent!';
   }
   else {
-    $form->addError('Email Address does not exist.');
+    $main->getErrorHandler()->addError('Email Address does not exist.');
   }
 }
 
-print Theme::htmlLoginTop('Sly Devil :: Forgot/Reset Password');
-print $form->returnHTML();
-print Theme::htmlLoginBottom();
+print $main->getTheme()->htmlLoginTop('Sly Devil :: Forgot/Reset Password');
+print $form->render();
+print $main->getTheme()->htmlLoginBottom();

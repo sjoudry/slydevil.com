@@ -1,9 +1,8 @@
 <?php
 
-use SlyDevil\Login;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../includes/init.inc.php');
 
-Login::clearLogin();
-
-header('Location: /login/');
+$main = new Main();
+$main->getLogin()->clearLogin();

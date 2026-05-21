@@ -1,27 +1,23 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
 use SlyDevil\Form\Element\Html;
-use Slydevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$form = Form::create()
-  ->setAction('/dashboard/users/delete.php')
-  ->setName('users_delete');
+$form = Form::create('users_delete');
 
-$user_id = Env::filterVariable($_REQUEST['id']);
-                
+$user_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
+
 if ($form->submitted() && $form->validated()) {
-  Database::query(
+  $main->getDatabase()->query(
     "UPDATE user SET user_date_deleted = NOW() WHERE user_id_public = '%s'",
     [
       $user_id
@@ -29,49 +25,43 @@ if ($form->submitted() && $form->validated()) {
   );
 
   $_SESSION['messages']['info'][] = 'User deleted successfully';
-    
+
   header('Location: /dashboard/users/');
   exit;
 }
 else {
   if (isset($_REQUEST['id'])) {
-    $result = Database::query(
+    $result = $main->getDatabase()->query(
       "SELECT * FROM user WHERE user_id_public = '%s'",
       [
         $user_id
       ]
     );
-                    
+
     if ($result->num_rows == 1) {
       $user = $result->fetch_assoc();
 
-      $hidden = Hidden::create()
-        ->setName('id')
-        ->setValue($user_id);
-    
-      $message = Html::create()
-        ->setContent("Are you sure you want to delete user '" . $user['user_username'] . "'?");
+      $hidden = Input::create('hidden', 'id')
+        ->setAttribute('value', $user_id);
 
-      $button = Button::create()
-        ->setName('user_delete_submit')
-        ->setValue('Yes, Delete User');
+      $message = Html::create('confirm', 'Are you sure you want to delete user "' . $user['user_username'] . '"?');
 
-      $fieldset = Fieldset::create()
-        ->setId('user_delete_fieldset')
-        ->setLegend('Delete User')
+      $button = Button::create('user_delete_submit', 'Yes, Delete User', Button::TYPE_SUBMIT);
+
+      $fieldset = Fieldset::create('user_delete_fieldset', 'Delete User')
         ->addElement($message)
         ->addElement($button);
 
       $form->addElement($hidden)
-          ->addElement($fieldset);
-            
-      print Theme::htmlDashboardTop('Sly Devil :: Users :: Delete');
-      print $form->returnHTML();
-      print Theme::htmlDashboardBottom();
+        ->addElement($fieldset);
+
+      print $main->getTheme()->htmlDashboardTop('Sly Devil :: Users :: Delete');
+      print $form->render();
+      print $main->getTheme()->htmlDashboardBottom();
     }
     else {
       $_SESSION['messages']['info'][] = 'No Users to delete';
-            
+
       header('Location: /dashboard/users/');
       exit;
     }

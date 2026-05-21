@@ -1,46 +1,36 @@
 <?php
 
-use Slydevil\Form\Element\Form;
-use Slydevil\Form\Element\Button;
-use Slydevil\Form\Element\Fieldset;
-use Slydevil\Form\Element\Html;
-use Slydevil\Form\Element\Password;
-use Slydevil\Form\Element\Text;
-use SlyDevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Form;
+use SlyDevil\Form\Element\Button;
+use SlyDevil\Form\Element\Fieldset;
+use SlyDevil\Form\Element\Html;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../includes/init.inc.php');
 
-$form = Form::create()
-  ->setAction('/login/')
-  ->setName('login');
+$main = new Main();
 
-$username = Text::create()
-  ->setName('username')
-  ->setMaxlength(255)
+$form = Form::create('login');
+
+$username = Input::create('text', 'username')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Email Address')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorEmail();
+  ->addValidator('existance')
+  ->addValidator('email');
 
-$password = Password::create()
-  ->setName('password')
-  ->setMaxlength(24)
+$password = Input::create('password', 'password')
+  ->setAttribute('maxlength', 24)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Password')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->addValidator('existance');
 
-$reset_link = Html::create()
-  ->setName('reset_link')
-  ->setContent("<a href='forgot.php'>Forgot Password?</a>");
+$reset_link = Html::create('reset_link', "<a href='/login/forgot.php'>Forgot Password?</a>");
 
-$button = Button::create()
-  ->setName('login_submit')
-  ->setValue('Login');
+$button = Button::create('login_submit', 'Login', Button::TYPE_SUBMIT);
 
-$fieldset = Fieldset::create()
-  ->setId('login_fieldset')
-  ->setLegend('Dashboard Login')
+$fieldset = Fieldset::create('login_fieldset', 'Dashboard Login')
   ->addElement($username)
   ->addElement($password)
   ->addElement($button)
@@ -49,10 +39,10 @@ $fieldset = Fieldset::create()
 $form->addElement($fieldset);
 
 if ($form->submitted() && $form->validated()) {
-  Login::setLogin($_REQUEST['username'], $_REQUEST['password']);
-  Login::handleLogin('user', '/dashboard/', FALSE, $form);
+  $main->getLogin()->setSession($_REQUEST['username'], $_REQUEST['password']);
+  $main->getLogin()->handle('user', '/dashboard/', FALSE);
 }
 
-print Theme::htmlLoginTop('Sly Devil :: Dashboard Login');
-print $form->returnHTML();
-print Theme::htmlLoginBottom();
+print $main->getTheme()->htmlLoginTop('Sly Devil :: Dashboard Login');
+print $form->render();
+print $main->getTheme()->htmlLoginBottom();

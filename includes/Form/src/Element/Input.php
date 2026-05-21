@@ -24,6 +24,25 @@ class Input extends LabelledElementBase {
   }
 
   public function render(): string {
+    $name = $this->getAttribute('name');
+
+    if (!empty($_REQUEST[$name])) {
+      switch ($this->elementSubType) {
+        case 'checkbox':
+        case 'radio':
+          if ($_REQUEST[$name] == ($this->getAttribute('value') ?? 'on')) {
+            $this->setAttribute('checked', TRUE);
+          }
+          break;
+
+        case 'password':
+          break;
+
+        default:
+          $this->setAttribute('value', $this->sessionManager->filterVariable($_REQUEST[$name]));
+      }
+    }
+
     return $this->renderElementTop() .
       '<input type="' . $this->elementSubType . '"' . $this->renderElementAttributes() . '/>' .
       $this->renderElementBottom();

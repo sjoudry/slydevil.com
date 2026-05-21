@@ -4,6 +4,7 @@ namespace SlyDevil\Form;
 
 use SlyDevil\Form\Utility\AssetManager;
 use SlyDevil\Form\Utility\ErrorHandler;
+use SlyDevil\Form\Utility\SessionManager;
 use SlyDevil\Form\Utility\ValidatorManager;
 
 abstract class ElementBase implements ElementInterface {
@@ -26,6 +27,8 @@ abstract class ElementBase implements ElementInterface {
 
   protected bool $required = FALSE;
 
+  protected ?SessionManager $sessionManager = NULL;
+
   protected ?ValidatorManager $validatorManager = NULL;
 
   public function __construct(string $name) {
@@ -34,6 +37,7 @@ abstract class ElementBase implements ElementInterface {
 
     $this->assetManager = new AssetManager();
     $this->errorHandler = new ErrorHandler();
+    $this->sessionManager = new SessionManager();
     $this->validatorManager = new ValidatorManager();
   }
 

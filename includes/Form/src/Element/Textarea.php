@@ -28,6 +28,11 @@ class Textarea extends LabelledElementBase {
   public function render(): string {
     $output = '';
 
+    $name = $this->getAttribute('name');
+    if (!empty($_REQUEST[$name])) {
+      $this->content = $this->sessionManager->filterVariable($_REQUEST[$name]);
+    }
+
     $output .= $this->renderElementTop();
     $output .= '<textarea';
     $output .= $this->renderElementAttributes();

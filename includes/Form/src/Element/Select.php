@@ -52,6 +52,20 @@ class Select extends LabelledElementBase {
   protected function renderOptions(array $options = []): string {
     $output = '';
 
+    $name = $this->getAttribute('name');
+    $selected = NULL;
+    if (!empty($_REQUEST[$name])) {
+      if (is_array($_REQUEST[$name])) {
+        $selected = [];
+        foreach ($_REQUEST[$name] as $value) {
+          $selected[] = $this->sessionManager->filterVariable($value);
+        }
+      }
+      else {
+        $selected = $this->sessionManager->filterVariable($_REQUEST[$name]);
+      }
+    }
+
     $options = empty($options) ? $this->options : $options;
     foreach ($options as $value => $label) {
       if (is_array($label)) {
@@ -60,6 +74,22 @@ class Select extends LabelledElementBase {
       }
       else {
         $output .= "<option value='" . $value . "'";
+
+        if (!empty($selected)) {
+          if (is_array($selected)) {
+            foreach ($selected as $selected_value) {
+              if ($selected_value == $value) {
+                $output .= ' selected="selected"';
+              }
+            }
+          }
+          else {
+            if ($selected == $value) {
+              $output .= ' selected="selected"';
+            }
+          }
+        }
+
         $output .= ">" . $label . "</option>";
       }
     }

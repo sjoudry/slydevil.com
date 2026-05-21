@@ -120,6 +120,12 @@ abstract class ElementBase implements ElementInterface {
     return $this;
   }
 
+  public function setId(string $id): static {
+    $this->id = $id;
+
+    return $this;
+  }
+
   public function setPostText(string $value): static {
     $this->postText = $value;
 
@@ -138,6 +144,15 @@ abstract class ElementBase implements ElementInterface {
     $this->addValidator('existance');
 
     return $this;
+  }
+
+  public function validateField(): bool {
+    $errors = $this->validatorManager->validate($this);
+    foreach ($errors as $error) {
+      $this->errorHandler->addError($error);
+    }
+
+    return !(count($errors));
   }
 
   protected function renderElementAttributes(array $exclude = []): string {
@@ -202,9 +217,9 @@ abstract class ElementBase implements ElementInterface {
   protected function renderElementRequired(): string {
     return $this->required ? '<span class="form-element-required">*</span>' : '';
   }
- 
+
   protected function renderElementTop(): string {
-    return $this->renderElementPreText() . 
+    return $this->renderElementPreText() .
       $this->renderElementDivBegin();
   }
 

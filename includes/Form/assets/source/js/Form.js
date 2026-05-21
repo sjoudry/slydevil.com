@@ -174,7 +174,7 @@ window.addEventListener('DOMContentLoaded', () => {
 					const type = parts[parts.length - 1].toLowerCase();
 					error = !fileTypes.includes(type);
 				}
-					
+
 				if (error) {
 					event.preventDefault();
 					return this.showInlineError(fieldId, 'file_type', '0');

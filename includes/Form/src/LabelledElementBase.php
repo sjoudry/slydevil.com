@@ -61,7 +61,7 @@ abstract class LabelledElementBase extends ElementBase implements LabelledElemen
   }
 
   protected function renderElementTop(): string {
-    return $this->renderElementPreText() . 
+    return $this->renderElementPreText() .
       $this->renderElementDivBegin() .
       $this->renderElementLabelLeft();
   }

@@ -20,15 +20,19 @@ abstract class GroupElementBase extends LabelledElementBase implements GroupElem
   protected ?string $elementSubType = NULL;
 
   public function addElement(ElementInterface $element): static {
-    $this->elements[$element->getId()] = $element;
+    $this->elements[] = $element;
 
     return $this;
   }
 
   public function deleteElement(string $id): static {
-    if (isset($this->elements[$id])) {
-      unset($this->elements[$id]);
+    $new_elements = [];
+    foreach ($this->elements as $element) {
+      if ($element->getId() != $id) {
+        $new_elements[] = $element;
+      }
     }
+    $this->elements = $new_elements;
 
     return $this;
   }
@@ -42,16 +46,8 @@ abstract class GroupElementBase extends LabelledElementBase implements GroupElem
   }
 
   public function render(): string {
-    $output = '';
 
-    $output .= $this->renderElementTop();
-
-    if ($this->elementSubType == 'checkbox') {
-      $output .= Input::create('hidden', $this->id)
-        ->setAttribute('value', 1)
-        ->render();
-    }
-
+    // Manipulate elements.
     foreach ($this->elements as $element) {
       if (isset($_REQUEST[$element->getAttribute('name')])) {
 
@@ -76,9 +72,20 @@ abstract class GroupElementBase extends LabelledElementBase implements GroupElem
       }
 
       if ($this->elementSubType == 'checkbox') {
-			  $element->setAttribute('name', $element->getAttribute('name') . '[]');
+        $element->setId($element->getAttribute('name') . '_' . $element->getAttribute('value'));
+        $element->setAttribute('name', $element->getAttribute('name') . '[]');
       }
+    }
 
+    $output = $this->renderElementTop();
+
+    if ($this->elementSubType == 'checkbox') {
+      $output .= Input::create('hidden', $this->id)
+        ->setAttribute('value', 1)
+        ->render();
+    }
+
+    foreach ($this->elements as $element) {
       $output .= $element->render();
     }
 

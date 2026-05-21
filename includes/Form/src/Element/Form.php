@@ -104,7 +104,7 @@ class Form extends ParentElementBase {
 
     return $this;
   }
-  
+
   public function submitted() {
     if (isset($_REQUEST[self::SUBMITTED_HIDDEN_NAME]) && $_REQUEST[self::SUBMITTED_HIDDEN_NAME] == $this->id) {
       if (isset($_REQUEST[self::TOKEN_HIDDEN_NAME]) && !$this->sessionManager->checkFormToken($this->id, $_REQUEST[self::TOKEN_HIDDEN_NAME])) {
@@ -118,7 +118,7 @@ class Form extends ParentElementBase {
   }
 
   public function validated(array $elements = []) {
-    $form_elements = $elements ?? $this->elements;
+    $form_elements = empty($elements) ? $this->elements : $elements;
 
     $valid = TRUE;
     foreach ($form_elements as $element) {
@@ -130,9 +130,9 @@ class Form extends ParentElementBase {
         $valid = FALSE;
       }
 
-      // if (!$element->validateField()) {
-      //   $valid = FALSE;
-      // }
+      if (!$element->validateField()) {
+        $valid = FALSE;
+      }
     }
 
     return $valid;

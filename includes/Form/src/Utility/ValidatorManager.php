@@ -5,7 +5,7 @@ namespace SlyDevil\Form\Utility;
 use SlyDevil\Form\ElementInterface;
 
 class ValidatorManager {
-  
+
   public const CONTAINS_LOWERCASE = 'contains_lowercase';
 
   public const CONTAINS_LOWERCASE_PATTERN = '/[a-z]/';
@@ -53,7 +53,7 @@ class ValidatorManager {
   public const PATTERN = 'pattern';
 
   public const PATTERN_MATCHES = TRUE;
- 
+
   public const PATTERN_NOT_MATCHES = FALSE;
 
   protected ?AssetManager $assetManager = NULL;
@@ -114,7 +114,7 @@ class ValidatorManager {
                 }
               }
             }
-            
+
             // String - existance.
             else {
               $errors[$type][] = $error;
@@ -222,7 +222,7 @@ class ValidatorManager {
           };
 
           foreach ($validator_errors as $error) {
-            $eerrors[] = $error;
+            $errors[] = $error;
           }
         }
       }
@@ -287,11 +287,9 @@ class ValidatorManager {
   protected function addValidatorMatch(ElementInterface $element, ElementInterface $compare, ?string $error_override, bool $matches) {
     if ($matches == self::FIELD_MATCHES) {
       $error = $error_override ?? '"%s" must be the same as "%s"';
-      $bind_match = 'true';
     }
     else {
       $error = $error_override ?? '"%s" must not be the same as "%s"';
-      $bind_match = 'false';
     }
     self::$validators[self::MATCH][$element->getAttribute('name')][$compare->getAttribute('name')] = [
       'matches' => $matches,
@@ -450,10 +448,10 @@ class ValidatorManager {
 
   protected function validateValueExistance(string $name, bool $set_error = TRUE): array|bool {
     if (
-      !empty(self::$validators[self::EXISTANCE][$name]) &&
       (
-        empty($_REQUEST[$name]) ||
-        empty($_FILES[$name]['name'])
+        (empty($_REQUEST[$name]) && empty($_FILES[$name])) ||
+        (isset($_REQUEST[$name]) && empty($_REQUEST[$name])) ||
+        (isset($_FILES[$name]) && empty($_FILES[$name]['name']))
       )
     ) {
       if ($set_error) {
@@ -463,7 +461,7 @@ class ValidatorManager {
       return FALSE;
     }
 
-    return TRUE;
+    return ($set_error) ? [] : TRUE;
   }
 
   protected function validateValueFileTypes(string $name): array {
@@ -484,10 +482,9 @@ class ValidatorManager {
   protected function validateValueLengthLong(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::LENGTH_LONG][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::LENGTH_LONG][$name] as $config) {
-        if (strlen($_REQUEST[$name]) > $config['length']) {
-          $errors[] = $config['error'];
-        }
+      $config = self::$validators[self::LENGTH_LONG][$name];
+      if (strlen($_REQUEST[$name]) > $config['length']) {
+        $errors[] = $config['error'];
       }
     }
 
@@ -497,10 +494,9 @@ class ValidatorManager {
   protected function validateValueLengthShort(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::LENGTH_SHORT][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::LENGTH_SHORT][$name] as $config) {
-        if (strlen($_REQUEST[$name]) < $config['length']) {
-          $errors[] = $config['error'];
-        }
+      $config = self::$validators[self::LENGTH_SHORT][$name];
+      if (strlen($_REQUEST[$name]) < $config['length']) {
+        $errors[] = $config['error'];
       }
     }
 
@@ -510,18 +506,16 @@ class ValidatorManager {
   protected function validateValueMatch(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::MATCH][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::MATCH][$name] as $compare_names) {
-        foreach ($compare_names as $compare_name => $config) {
-          if ($this->validateValueExistance($compare_name, FALSE)) {
-            if ($config['matches'] == self::FIELD_MATCHES) {
-              if ($_REQUEST[$name] != $_REQUEST[$compare_name]) {
-                $errors[] = $config['error'];
-              }
+      foreach (self::$validators[self::MATCH][$name] as $compare_name => $config) {
+        if ($this->validateValueExistance($compare_name, FALSE)) {
+          if ($config['matches'] == self::FIELD_MATCHES) {
+            if ($_REQUEST[$name] != $_REQUEST[$compare_name]) {
+              $errors[] = $config['error'];
             }
-            else {
-              if ($_REQUEST[$name] == $_REQUEST[$compare_name]) {
-                $errors[] = $config['error'];
-              }
+          }
+          else {
+            if ($_REQUEST[$name] == $_REQUEST[$compare_name]) {
+              $errors[] = $config['error'];
             }
           }
         }
@@ -534,10 +528,9 @@ class ValidatorManager {
   protected function validateValueMaximumChecked(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::MAXIMUM_CHECKED][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::MAXIMUM_CHECKED][$name] as $config) {
-        if (count($_REQUEST[$name]) > $config['maximum']) {
-          $errors[] = $config['error'];
-        }
+      $config = self::$validators[self::MAXIMUM_CHECKED][$name];
+      if (count($_REQUEST[$name]) > $config['maximum']) {
+        $errors[] = $config['error'];
       }
     }
 
@@ -547,10 +540,9 @@ class ValidatorManager {
   protected function validateValueMaximumSelected(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::MAXIMUM_SELECTED][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::MAXIMUM_SELECTED][$name] as $config) {
-        if (count($_REQUEST[$name]) > $config['maximum']) {
-          $errors[] = $config['error'];
-        }
+      $config = self::$validators[self::MAXIMUM_SELECTED][$name];
+      if (count($_REQUEST[$name]) > $config['maximum']) {
+        $errors[] = $config['error'];
       }
     }
 
@@ -560,10 +552,11 @@ class ValidatorManager {
   protected function validateValueMinimumChecked(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::MINIMUM_CHECKED][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::MINIMUM_CHECKED][$name] as $config) {
-        if (count($_REQUEST[$name]) < $config['minimum']) {
-          $errors[] = $config['error'];
-        }
+      $config = self::$validators[self::MINIMUM_CHECKED][$name];
+print $name . "\n";
+print_r($_REQUEST);
+      if (count($_REQUEST[$name]) < $config['minimum']) {
+        $errors[] = $config['error'];
       }
     }
 
@@ -586,17 +579,15 @@ class ValidatorManager {
   protected function validateValuePattern(string $name): array {
     $errors = [];
     if (!empty(self::$validators[self::PATTERN][$name]) && $this->validateValueExistance($name, FALSE)) {
-      foreach (self::$validators[self::PATTERN][$name] as $patterns) {
-        foreach ($patterns as $pattern => $config) {
-          if ($config['matches'] == self::PATTERN_MATCHES) {
-            if (!preg_match($pattern, $_REQUEST[$name])) {
-              $errors[] = $config['error'];
-            }
+      foreach (self::$validators[self::PATTERN][$name] as $pattern => $config) {
+        if ($config['matches'] == self::PATTERN_MATCHES) {
+          if (!preg_match($pattern, $_REQUEST[$name])) {
+            $errors[] = $config['error'];
           }
-          else {
-            if (preg_match($pattern, $_REQUEST[$name])) {
-              $errors[] = $config['error'];
-            }
+        }
+        else {
+          if (preg_match($pattern, $_REQUEST[$name])) {
+            $errors[] = $config['error'];
           }
         }
       }
@@ -604,5 +595,5 @@ class ValidatorManager {
 
     return $errors;
   }
- 
+
 }

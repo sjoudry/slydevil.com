@@ -8,6 +8,8 @@ class Select extends LabelledElementBase {
 
   protected array $options = [];
 
+  protected mixed $selected;
+
   public static function create(string $name): self {
     return new static($name);
   }
@@ -18,10 +20,6 @@ class Select extends LabelledElementBase {
     $this->elementType = 'select';
 
     return $this;
-  }
-
-  public function getOptions(): array {
-    return $this->options;
   }
 
   public function render(): string {
@@ -49,20 +47,24 @@ class Select extends LabelledElementBase {
     return $this;
   }
 
+  public function setSelected(mixed $value): self {
+    $this->selected = $value;
+    return $this;
+  }
+
   protected function renderOptions(array $options = []): string {
     $output = '';
 
     $name = $this->getAttribute('name');
-    $selected = NULL;
     if (!empty($_REQUEST[$name])) {
       if (is_array($_REQUEST[$name])) {
-        $selected = [];
+        $this->selected = [];
         foreach ($_REQUEST[$name] as $value) {
-          $selected[] = $this->sessionManager->filterVariable($value);
+          $this->selected[] = $this->sessionManager->filterVariable($value);
         }
       }
       else {
-        $selected = $this->sessionManager->filterVariable($_REQUEST[$name]);
+        $this->selected = $this->sessionManager->filterVariable($_REQUEST[$name]);
       }
     }
 
@@ -75,18 +77,16 @@ class Select extends LabelledElementBase {
       else {
         $output .= "<option value='" . $value . "'";
 
-        if (!empty($selected)) {
-          if (is_array($selected)) {
-            foreach ($selected as $selected_value) {
+        if (!empty($this->selected)) {
+          if (is_array($this->selected)) {
+            foreach ($this->selected as $selected_value) {
               if ($selected_value == $value) {
                 $output .= ' selected="selected"';
               }
             }
           }
-          else {
-            if ($selected == $value) {
-              $output .= ' selected="selected"';
-            }
+          else if ($this->selected == $value) {
+            $output .= ' selected="selected"';
           }
         }
 

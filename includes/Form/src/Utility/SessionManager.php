@@ -1,10 +1,8 @@
 <?php
 
 namespace SlyDevil\Form\Utility;
-		
-class SessionManager {
 
-	public const PASSWORD_SEED = 'SLYDEVIL_PASSWORD';
+class SessionManager {
 
 	public const SESSION_MAX_AGE = 3600;
 
@@ -21,6 +19,8 @@ class SessionManager {
 	public const SESSION_FORM_TOKEN_MAX_AGE = 3600;
 
 	public const SESSION_FORM_TOKEN_NAME = 'form-tokens';
+
+	protected string $passwordSeed = 'PASSWORD_SEED';
 
 	public function __construct() {
 		$this->continueSession();
@@ -62,17 +62,17 @@ class SessionManager {
 		// to determine if the session has lapsed. Lapsed sessions cannot be
 		// used and must be destroyed.
 		$_SESSION[self::SESSION_KEY_UPDATED_NAME] = $time;
-		
-		// Keeps track of the ip address of the user and is used above to 
+
+		// Keeps track of the ip address of the user and is used above to
 		// determine if the session is being used by more than one ip address.
 		// Multiple ip addresses are not allowed and the session must be destroyed.
 		$_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME] = $_SERVER["REMOTE_ADDR"];
-		
+
 		// Keeps track of the browser of the user and is used above to determine
 		// if the session is being used by more than one browser. Multiple browsers
 		// are not alloed and the session must be destroyed.
 		$_SESSION[self::SESSION_KEY_USER_AGENT_NAME] = $_SERVER["HTTP_USER_AGENT"];
-		
+
 		// Keep track of the creation time of a session and use it to
 		// determine if the session has lapsed. Lapsed sessions cannot be used
 		// and must be destroyed.
@@ -82,41 +82,45 @@ class SessionManager {
 	}
 
 	public function cryptPassword(string $value) {
-		return md5(self::PASSWORD_SEED . $value);
+		return md5($this->passwordSeed . $value);
 	}
 
   public function filterVariable(string $value) {
     return filter_var(htmlspecialchars($value), FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
   }
-    
+
 	public function generateRandomString(int $length = 64, string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') {
 		$random_string = '';
 		$charset_length = strlen($charset);
 		$string_length = $length;
-		
+
 		while ($string_length > 0) {
 			$random_string .= $charset[mt_rand(0, $charset_length - 1)];
 			$string_length--;
 		}
-		
+
 		return $random_string;
 	}
 
 	public function setFormToken(string $form_id) {
 		$this->continueSession();
-		
+
 		// Make sure the user cannot fill the session with tokens.
 		if (isset($_SESSION[self::SESSION_FORM_TOKEN_NAME][$form_id])) {
 			if (count($_SESSION[self::SESSION_FORM_TOKEN_NAME][$form_id]) > self::SESSION_FORM_TOKEN_LIMIT) {
 				array_shift($_SESSION[self::SESSION_FORM_TOKEN_NAME][$form_id]);
 			}
 		}
-		
+
 		$token = $this->generateRandomString();
 
 		$_SESSION[self::SESSION_FORM_TOKEN_NAME][$form_id][$token] = time();
-		
+
 		return $token;
+	}
+
+	public function setPasswordSeed(string $seed) {
+		$this->passwordSeed = $seed;
 	}
 
 }

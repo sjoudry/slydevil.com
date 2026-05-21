@@ -86,15 +86,16 @@ $font: verdana, arial, sans-serif;
 	background: #ffebe8;
 	border: 1px solid #c00c00;
 	border-radius: 3px;
-	display: none;
 	margin: 10px 15px 10px 15px;
 	padding: 10px 10px 0 10px;
 
 	.form-individual-error {
-		display: none;
 		font-family: $font;
 		font-size: 16px;
 		padding: 0 0 10px 0;
 	}
 }
-
+.form-error-group-inline,
+.form-individual-error-inline {
+	display: none;
+}

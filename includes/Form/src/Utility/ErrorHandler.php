@@ -4,29 +4,37 @@ namespace SlyDevil\Form\Utility;
 
 class ErrorHandler {
 
-  protected array $errors = [];
+  public const SESSION_KEY_ERRORS = 'errors';
 
   protected ?ValidatorManager $validatorManager = NULL;
 
   public function __construct() {
     $this->validatorManager = new ValidatorManager();
+
+    if (empty($_SESSION[self::SESSION_KEY_ERRORS])) {
+      $_SESSION[self::SESSION_KEY_ERRORS] = [];
+    }
   }
 
   public function addError(string $error) {
-    $this->errors[] = $error;
+    $_SESSION[self::SESSION_KEY_ERRORS][] = $error;
   }
 
   public function getErrors(): array {
-    return $this->errors;
+    $errors = $_SESSION[self::SESSION_KEY_ERRORS];
+    $_SESSION[self::SESSION_KEY_ERRORS] = [];
+
+    return $errors;
   }
 
   public function renderErrors(string $form_id): string {
     $output = '';
 
-    if (count($this->errors)) {
+    $errors = $this->getErrors();
+    if (count($errors)) {
       $output .= '<div id="form-error-group-' . $form_id . '" class="form-error-group">';
 
-      foreach ($this->errors as $error) {
+      foreach ($errors as $error) {
         $output .= '<div class="form-individual-error">' . $error . '</div>';
       }
 
@@ -41,10 +49,10 @@ class ErrorHandler {
 
     $validators = $this->validatorManager->getValidatorErrors($name);
     if (!empty($validators)) {
-      $output .= '<div id="form-error-group-' . $name . '" class="form-error-group" data-visible="0">';
+      $output .= '<div id="form-error-group-' . $name . '" class="form-error-group form-error-group-inline" data-visible="0">';
       foreach ($validators as $validator => $error_groups) {
         foreach ($error_groups as $group => $error) {
-          $output .= '<div id="form-individual-error-' . $validator . '-' . $group . '-' . $name . '" class="form-individual-error" data-visible="0">';
+          $output .= '<div id="form-individual-error-' . $validator . '-' . $group . '-' . $name . '" class="form-individual-error form-individual-error-inline" data-visible="0">';
           $output .= $error;
           $output .= '</div>';
         }

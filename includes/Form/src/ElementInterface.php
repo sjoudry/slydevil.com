@@ -32,6 +32,8 @@ interface ElementInterface {
 
   public function setDescription(string $value): ElementInterface;
 
+  public function setId(string $id): ElementInterface;
+
   public function setPostText(string $value): ElementInterface;
 
   public function setPreText(string $value): ElementInterface;

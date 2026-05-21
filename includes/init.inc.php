@@ -1,9 +1,9 @@
 <?php
 
-use SlyDevil\Env;
-use SlyDevil\Session;
+use SlyDevil\Site\Main;
 
-include_once(__DIR__ . '/autoload.inc.php');
+include_once(__DIR__ . '/Form/autoload.inc.php');
+include_once(__DIR__ . '/Site/autoload.inc.php');
 
-Session::continueSession();
-Env::loadEnv();
+$main = new Main();
+$main->getSessionManager()->continueSession();

@@ -54,7 +54,7 @@ $fieldset = Fieldset::create('invoice_filter_fieldset', '<i class="fa fa-filter"
 $form->addElement($fieldset);
 
 if ($form->submitted()) {
-  $account->setSelected($_REQUEST['account_id']);
+  $account->setSelected($main->getSessionManager()->filterVariable($_REQUEST['account_id']));
 
   $button2 = Button::create('invoices_filter_reset', 'Reset');
 

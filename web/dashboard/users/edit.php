@@ -189,9 +189,9 @@ if ($form->submitted() && $form->validated()) {
     $user_id_db = 0;
     if ($user_id) {
       $args = [
-        $_REQUEST['user_username'],
-        $_REQUEST['user_first_name'],
-        $_REQUEST['user_last_name'],
+        $main->getSessionManager()->filterVariable($_REQUEST['user_username']),
+        $main->getSessionManager()->filterVariable($_REQUEST['user_first_name']),
+        $main->getSessionManager()->filterVariable($_REQUEST['user_last_name']),
         $account_id,
       ];
 
@@ -232,9 +232,9 @@ if ($form->submitted() && $form->validated()) {
         ('%s', '%s', '%s', '%s', %s, '%s', NOW())",
         [
           $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['user_username']) . time()),
-          $_REQUEST['user_username'],
-          $_REQUEST['user_first_name'],
-          $_REQUEST['user_last_name'],
+          $main->getSessionManager()->filterVariable($_REQUEST['user_username']),
+          $main->getSessionManager()->filterVariable($_REQUEST['user_first_name']),
+          $main->getSessionManager()->filterVariable($_REQUEST['user_last_name']),
           $account_id,
           $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['user_password'])),
         ]

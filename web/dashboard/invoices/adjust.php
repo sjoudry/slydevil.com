@@ -151,8 +151,8 @@ if ($form->submitted() && $form->validated()) {
     [
       $invoice,
       ++$next,
-      'Adjustment: ' . $_REQUEST['adjustment_reason'],
-      $_REQUEST['adjustment']
+      'Adjustment: ' . $main->getSessionManager()->filterVariable($_REQUEST['adjustment_reason']),
+      $main->getSessionManager()->filterVariable($_REQUEST['adjustment'])
     ]
   );
 

@@ -93,7 +93,7 @@ $form->addElement($fieldset);
 
 if ($form->submitted() && $form->validated()) {
   $duplicate_sql = "SELECT package_id_public FROM package WHERE package_name = '%s'";
-  $duplicate_args = [$_REQUEST['package_name']];
+  $duplicate_args = [$main->getSessionManager()->filterVariable($_REQUEST['package_name'])];
 
   if ($package_id) {
     $duplicate_sql .= " AND package_id_public <> '%s'";

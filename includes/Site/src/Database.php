@@ -61,7 +61,7 @@ class Database {
     $dtz  = new \DateTimeZone(date_default_timezone_get());
     $time = new \DateTime("now", $dtz);
     $offset = $dtz->getOffset($time) / 3600;
-    if ($offset > 0) {
+    if ($offset >= 0) {
       $offset = '+' . $offset;
     }
 

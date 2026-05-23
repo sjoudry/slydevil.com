@@ -24,7 +24,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Domains deleted successfully';
+  $main->getSessionManager()->addMessage('Domain deleted successfully');
 
   header('Location: /dashboard/domains/');
   exit;
@@ -60,7 +60,7 @@ else {
       print $main->getTheme()->htmlDashboardBottom();
     }
     else {
-      $_SESSION['messages']['info'][] = 'No Domains to delete';
+      $main->getSessionManager()->addMessage('No Domains to delete');
 
       header('Location: /dashboard/domains/');
       exit;

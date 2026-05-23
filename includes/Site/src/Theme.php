@@ -2,6 +2,8 @@
 
 namespace SlyDevil\Site;
 
+use SlyDevil\Form\Utility\SessionManager;
+
 class Theme {
 
   public const MENU = [
@@ -141,22 +143,23 @@ class Theme {
       $html .= $this->htmlDashboardMenu();
     }
 
-    if (isset($_SESSION['messages']['info']) && count($_SESSION['messages']['info']) > 0) {
-      $html .= '<div class="messages-info-container">';
-      $html .= '<div class="messages-info-wrapper">';
-      $html .= '<div class="messages-info">';
-      $html .= '<ul>';
+    $typed_messages = $this->login->getSessionManager()->getMessages();
+    if (count($typed_messages)) {
+      foreach ($typed_messages as $type => $messages) {
+        $html .= '<div class="messages-' . $type . '-container">';
+        $html .= '<div class="messages-' . $type . '-wrapper">';
+        $html .= '<div class="messages-' . $type . '">';
+        $html .= '<ul>';
 
-      foreach ($_SESSION['messages']['info'] as $message) {
-        $html .= '<li>' . $message . '</li>';
+        foreach ($messages as $message) {
+          $html .= '<li>' . $message . '</li>';
+        }
+
+        $html .= '</ul>';
+        $html .= '</div>';
+        $html .= '</div>';
+        $html .= '</div>';
       }
-
-      $html .= '</ul>';
-      $html .= '</div>';
-      $html .= '</div>';
-      $html .= '</div>';
-
-      $_SESSION['messages']['info'] = [];
     }
 
     return $html;

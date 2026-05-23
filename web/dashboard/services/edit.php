@@ -127,7 +127,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'Service updated successfully';
+      $main->getSessionManager()->addMessage('Service updated successfully');
     }
     else {
       $main->getDatabase()->query(
@@ -141,7 +141,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'New Service added successfully';
+      $main->getSessionManager()->addMessage('New Service added successfully');
     }
 
     header('Location: /dashboard/services/');

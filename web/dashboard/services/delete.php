@@ -24,7 +24,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Services deleted successfully';
+  $main->getSessionManager()->addMessage('Service deleted successfully');
 
   header('Location: /dashboard/services/');
   exit;
@@ -60,7 +60,7 @@ else {
       print $main->getTheme()->htmlDashboardBottom();
     }
     else {
-      $_SESSION['messages']['info'][] = 'No Services to delete';
+      $main->getSessionManager()->addMessage('No Services to delete');
 
       header('Location: /dashboard/services/');
       exit;

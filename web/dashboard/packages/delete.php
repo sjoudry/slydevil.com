@@ -24,7 +24,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Packages deleted successfully';
+  $main->getSessionManager()->addMessage('Package deleted successfully');
 
   header('Location: /dashboard/packages/');
   exit;
@@ -60,7 +60,7 @@ else {
       print $main->getTheme()->htmlDashboardBottom();
     }
     else {
-      $_SESSION['messages']['info'][] = 'No Packages to delete';
+      $main->getSessionManager()->addMessage('No Packages to delete');
 
       header('Location: /dashboard/packages/');
       exit;

@@ -205,11 +205,14 @@ if ($form->submitted() && $form->validated()) {
       ]
     );
 
-    $_SESSION[Login::LOGIN_PASSWORD] = (empty($_REQUEST['user_password'])
-      ? $account['user_password']
-      : $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['user_password'])));
+    if (empty($_REQUEST['user_password'])) {
+      $main->getLogin()->updateSessionPassword($account['user_password'], FALSE);
+    }
+    else {
+      $main->getLogin()->updateSessionPassword($_REQUEST['user_password']);
+    }
 
-    $_SESSION['messages']['info'][] = 'Account updated successfully';
+    $main->getSessionManager()->addMessage('Account updated successfully');
 
     header('Location: /dashboard/details.php');
     exit;

@@ -112,7 +112,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'Domain updated successfully';
+      $main->getSessionManager()->addMessage('Domain updated successfully');
     }
     else {
       $main->getDatabase()->query(
@@ -125,7 +125,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'New Domain added successfully';
+      $main->getSessionManager()->addMessage('New Domain added successfully');
     }
 
     header('Location: /dashboard/domains/');

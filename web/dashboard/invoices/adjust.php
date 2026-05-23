@@ -156,7 +156,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Adjustment added successfully';
+  $main->getSessionManager()->addMessage('Adjustment added successfully');
 
   header('Location: /dashboard/invoices/');
   exit;

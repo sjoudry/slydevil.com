@@ -24,7 +24,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'User deleted successfully';
+  $main->getSessionManager()->addMessage('User deleted successfully');
 
   header('Location: /dashboard/users/');
   exit;
@@ -60,7 +60,7 @@ else {
       print $main->getTheme()->htmlDashboardBottom();
     }
     else {
-      $_SESSION['messages']['info'][] = 'No Users to delete';
+      $main->getSessionManager()->addMessage('No Users to delete');
 
       header('Location: /dashboard/users/');
       exit;

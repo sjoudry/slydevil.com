@@ -122,7 +122,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'Package updated successfully';
+      $main->getSessionManager()->addMessage('Package updated successfully');
     }
     else {
       $main->getDatabase()->query(
@@ -137,7 +137,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'New Package added successfully';
+      $main->getSessionManager()->addMessage('New Package added successfully');
     }
 
     header('Location: /dashboard/packages/');

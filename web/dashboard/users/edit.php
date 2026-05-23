@@ -224,7 +224,7 @@ if ($form->submitted() && $form->validated()) {
         ]
       );
 
-      $_SESSION['messages']['info'][] = 'User updated successfully';
+      $main->getSessionManager()->addMessage('User updated successfully');
     }
     else {
       $main->getDatabase()->query(
@@ -242,7 +242,7 @@ if ($form->submitted() && $form->validated()) {
 
       $user_id_db = $main->getDatabase()->insert_id();
 
-      $_SESSION['messages']['info'][] = 'New User added successfully';
+      $main->getSessionManager()->addMessage('New User added successfully');
     }
 
     foreach ($_REQUEST['user_permission'] as $index => $value) {

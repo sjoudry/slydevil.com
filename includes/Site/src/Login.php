@@ -125,6 +125,10 @@ class Login {
     }
   }
 
+  public function updateSessionPassword(string $password, bool $encrypt = TRUE) {
+    $_SESSION[self::LOGIN_PASSWORD] = ($encrypt) ? $this->sessionManager->cryptPassword($password) : $password;
+  }
+
   protected function checkSession() {
     if (!empty($_SESSION[self::LOGIN_PUBLIC_ID]) && !empty($_SESSION[self::LOGIN_PASSWORD])) {
       $result = $this->database->query(

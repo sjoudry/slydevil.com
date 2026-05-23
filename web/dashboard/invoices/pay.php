@@ -129,7 +129,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Payment added successfully';
+  $main->getSessionManager()->addMessage('Payment added successfully');
 
   header('Location: /dashboard/invoices/');
   exit;

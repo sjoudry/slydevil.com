@@ -101,7 +101,7 @@ EOS;
       exit;
     }
 
-    $_SESSION['messages']['info'][] = 'Password Reset email has been sent!';
+    $main->getSessionManager()->addMessage('Password Reset email has been sent!');
   }
   else {
     $main->getErrorHandler()->addError('Email Address does not exist.');

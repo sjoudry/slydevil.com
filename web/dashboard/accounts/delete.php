@@ -24,7 +24,7 @@ if ($form->submitted() && $form->validated()) {
     ]
   );
 
-  $_SESSION['messages']['info'][] = 'Accounts deleted successfully';
+  $main->getSessionManager()->addMessage('Account deleted successfully');
 
   header('Location: /dashboard/accounts/');
   exit;
@@ -60,7 +60,7 @@ else {
       print $main->getTheme()->htmlDashboardBottom();
     }
     else {
-      $_SESSION['messages']['info'][] = 'No Accounts to delete';
+      $main->getSessionManager()->addMessage('No Accounts to delete');
 
       header('Location: /dashboard/accounts/');
       exit;

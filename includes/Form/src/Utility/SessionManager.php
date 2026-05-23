@@ -10,6 +10,8 @@ class SessionManager {
 
 	public const SESSION_KEY_IP_ADDRESS_NAME = 'ip_address';
 
+	public const SESSION_KEY_MESSAGES = 'messages';
+
 	public const SESSION_KEY_UPDATED_NAME = 'updated';
 
 	public const SESSION_KEY_USER_AGENT_NAME = 'user_agent';
@@ -24,6 +26,10 @@ class SessionManager {
 
 	public function __construct() {
 		$this->continueSession();
+	}
+
+	public function addMessage(string $message, string $type = 'info') {
+		$_SESSION[self::SESSION_KEY_MESSAGES][$type][] = $message;
 	}
 
 	public function checkFormToken(string $form_id, string $form_token) {
@@ -100,6 +106,13 @@ class SessionManager {
 		}
 
 		return $random_string;
+	}
+
+	public function getMessages() {
+		$messages = $_SESSION[self::SESSION_KEY_MESSAGES] ?? [];
+		$_SESSION[self::SESSION_KEY_MESSAGES] = [];
+
+		return $messages;
 	}
 
 	public function setFormToken(string $form_id) {

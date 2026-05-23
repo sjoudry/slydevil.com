@@ -12,7 +12,8 @@ class Database {
 
   public function connect() {
     if (!$this->db) {
-      $this->db = new \mysqli(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASS'), getenv('DB_NAME'));
+      $this->db = mysqli_init();
+      mysqli_real_connect($this->db, getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASS'), getenv('DB_NAME'), getenv('DB_PORT') ?? 3306, NULL, MYSQLI_CLIENT_SSL);
 
       if ($this->db->connect_errno > 0) {
         die('Connect Error (' . $this->db->connect_errno . ') ' . $this->db->connect_error);

@@ -1,17 +1,16 @@
 <?php
 
-use SlyDevil\Database;
-use Slydevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-print Theme::htmlDashboardTop('Hosting :: Accounts');
-print "<div class='button'><a href='edit.php'><i class='fa fa-plus'></i> Add New Account</a></div>\n";
+print $main->getTheme()->htmlDashboardTop('Hosting :: Accounts');
+print '<div class="button"><a href="edit.php"><i class="fa fa-plus"></i> Add New Account</a></div>';
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   'SELECT
     account_id_public,
     account_name,
@@ -33,37 +32,37 @@ $result = Database::query(
 );
 
 if ($result->num_rows) {
-  print "<table border='0' cellpadding='2' cellspacing='0' width='100%'>\n";
-  print "<tr>\n";
-  print "<th>&nbsp;</th>\n";
-  print "<th>&nbsp;</th>\n";
-  print "<th>Acount</th>\n";
-  print "<th>Package</th>\n";
-  print "<th>Dom</th>\n";
-  print "<th>Ser</th>\n";
-  print "<th>Inv</th>\n";
-  print "<th>Date Added</th>\n";
-  print "</tr>\n";
+  print '<table border="0" cellpadding="2" cellspacing="0" width="100%">';
+  print '<tr>';
+  print '<th>&nbsp;</th>';
+  print '<th>&nbsp;</th>';
+  print '<th>Acount</th>';
+  print '<th>Package</th>';
+  print '<th>Dom</th>';
+  print '<th>Ser</th>';
+  print '<th>Inv</th>';
+  print '<th>Date Added</th>';
+  print '</tr>';
 
   $stripe = 'even';
   while ($row = $result->fetch_assoc()) {
-    print "<tr>\n";
-    print "<td class='" . $stripe . "'><a href='edit.php?id=" . $row["account_id_public"] . "'><i class='fa fa-pencil'></i></a></td>\n";
-    print "<td class='" . $stripe . "'><a href='delete.php?id=" . $row["account_id_public"] . "'><i class='fa fa-trash-o'></i></a></td>\n";
-    print "<td class='" . $stripe . "'>" . $row["account_name"] . "</td>\n";
-    print "<td class='" . $stripe . "'>" . $row["package_name"] . "</td>\n";
-    print "<td class='" . $stripe . "'>" . $row["accounts"] . "</td>\n";
-    print "<td class='" . $stripe . "'>" . $row["services"] . "</td>\n";
-    print "<td class='" . $stripe . "'>" . $row["invoices"] . "</td>\n";
-    print "<td class='" . $stripe . "'>" . $row["account_date_added"] . "</td>\n";
-    print "</tr>\n";
+    print '<tr>';
+    print '<td class="' . $stripe . '"><a href="edit.php?id=' . $row['account_id_public'] . '"><i class="fa fa-pencil"></i></a></td>';
+    print '<td class="' . $stripe . '"><a href="delete.php?id=' . $row['account_id_public'] . '"><i class="fa fa-trash-o"></i></a></td>';
+    print '<td class="' . $stripe . '">' . $row['account_name'] . '</td>';
+    print '<td class="' . $stripe . '">' . $row['package_name'] . '</td>';
+    print '<td class="' . $stripe . '">' . $row['accounts'] . '</td>';
+    print '<td class="' . $stripe . '">' . $row['services'] . '</td>';
+    print '<td class="' . $stripe . '">' . $row['invoices'] . '</td>';
+    print '<td class="' . $stripe . '">' . $row['account_date_added'] . '</td>';
+    print '</tr>';
 
     $stripe = ($stripe == 'even') ? 'odd' : 'even';
   }
-  print "</table>\n";
+  print '</table>';
 }
 else {
-  print "<div class='table-no-data'>No accounts</div>\n";
+  print '<div class="table-no-data">No accounts</div>';
 }
 
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardBottom();

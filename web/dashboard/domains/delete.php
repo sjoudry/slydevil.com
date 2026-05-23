@@ -1,27 +1,23 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
 use SlyDevil\Form\Element\Html;
-use Slydevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$form = Form::create()
-  ->setAction('delete.php')
-  ->setName('domains_delete');
+$form = Form::create('domains_delete');
 
-$domain_id = Env::filterVariable($_REQUEST['id']);
-                
+$domain_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
+
 if ($form->submitted() && $form->validated()) {
-  Database::query(
+  $main->getDatabase()->query(
     "UPDATE domain SET domain_date_deleted = NOW() WHERE domain_id_public = '%s'",
     [
       $domain_id
@@ -29,49 +25,43 @@ if ($form->submitted() && $form->validated()) {
   );
 
   $_SESSION['messages']['info'][] = 'Domains deleted successfully';
-  
+
   header('Location: /dashboard/domains/');
   exit;
 }
 else {
   if (isset($_REQUEST['id'])) {
-    $result = Database::query(
+    $result = $main->getDatabase()->query(
       "SELECT * FROM domain WHERE domain_id_public = '%s'",
       [
         $domain_id
       ]
     );
-                    
+
     if ($result->num_rows == 1) {
       $domain = $result->fetch_assoc();
 
-      $hidden = Hidden::create()
-        ->setName('id')
-        ->setValue($domain_id);
-    
-      $message = Html::create()
-        ->setContent("Are you sure you want to delete domain '" . $domain['domain_name'] . "'?");
+      $hidden = Input::create('hidden', 'id')
+        ->setAttribute('value', $domain_id);
 
-      $button = Button::create()
-        ->setName('domain_delete_submit')
-        ->setValue('Yes, Delete Domain');
+      $message = Html::create('delete_confirm', 'Are you sure you want to delete domain "' . $domain['domain_name'] . '"?');
 
-      $fieldset = Fieldset::create()
-        ->setId('domain_delete_fieldset')
-        ->setLegend('Delete Domain')
+      $button = Button::create('domain_delete_submit', 'Yes, Delete Domain');
+
+      $fieldset = Fieldset::create('domain_delete_fieldset', 'Delete Domain')
         ->addElement($message)
         ->addElement($button);
 
       $form->addElement($hidden)
         ->addElement($fieldset);
-          
-      print Theme::htmlDashboardTop('Hosting :: Domains :: Delete');
-      print $form->returnHTML();
-      print Theme::htmlDashboardBottom();
+
+      print $main->getTheme()->htmlDashboardTop('Hosting :: Domains :: Delete');
+      print $form->render();
+      print $main->getTheme()->htmlDashboardBottom();
     }
     else {
       $_SESSION['messages']['info'][] = 'No Domains to delete';
-          
+
       header('Location: /dashboard/domains/');
       exit;
     }

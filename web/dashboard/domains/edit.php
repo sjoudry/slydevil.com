@@ -1,24 +1,18 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
+use SlyDevil\Form\Element\Input;
 use SlyDevil\Form\Element\Select;
-use SlyDevil\Form\Element\Text;
-use Slydevil\Login;
-use SlyDevil\Session;
-use SlyDevil\Theme;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$form = Form::create()
-  ->setAction('edit.php')
-  ->setName('domains_edit');
+$form = Form::create('domains_edit');
 
 $suffix = 'add';
 $button_value = 'Add Domain';
@@ -28,9 +22,9 @@ $account_id = '';
 if (isset($_REQUEST['id'])) {
   $suffix = 'edit';
   $button_value = 'Save Changes';
-  $domain_id = Env::filterVariable($_REQUEST['id']);
+  $domain_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
 
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT *, account_id_public FROM domain JOIN account USING (account_id) WHERE domain_id_public = '%s'",
     [
       $domain_id
@@ -46,41 +40,34 @@ if (isset($_REQUEST['id'])) {
 
   $result->close();
 
-  $hidden = Hidden::create()
-    ->setName('id')
-    ->setValue($domain_id);
+  $hidden = Input::create('hidden', 'id')
+    ->setAttribute('value', $domain_id);
 
   $form->addElement($hidden);
 }
 
-$name = Text::create()
-  ->setName('domain_name')
-  ->setMaxlength(255)
-  ->setValue($domain_name)
+$name = Input::create('text', 'domain_name')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $domain_name)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Domain Name')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->addValidator('existance');
 
-$result = Database::query('SELECT account_id_public, account_name FROM account WHERE account_date_deleted IS NULL ORDER BY account_name');
+$result = $main->getDatabase()->query('SELECT account_id_public, account_name FROM account WHERE account_date_deleted IS NULL ORDER BY account_name');
 $accounts = ['0' => '--- Select Account ---'];
 while ($row = $result->fetch_assoc()) {
   $accounts[$row['account_id_public']] = $row['account_name'];
 }
-$account = Select::create()
-  ->setName('account_id')
+$account = Select::create('account_id')
   ->setOptions($accounts)
   ->setSelected($account_id)
   ->addLabel('Account')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->setAttribute('class', 'form-control')
+  ->addValidator('existance');
 
-$button = Button::create()
-  ->setName('domain_' . $suffix . '_submit')
-  ->setValue($button_value);
+$button = Button::create('domain_' . $suffix . '_submit', $button_value);
 
-$fieldset = Fieldset::create()
-  ->setId('package_' . $suffix . '_fieldset')
-  ->setLegend(ucfirst($suffix) . ' Domain')
+$fieldset = Fieldset::create('package_' . $suffix . '_fieldset', ucfirst($suffix) . ' Domain')
   ->addElement($name)
   ->addElement($account)
   ->addElement($button);
@@ -89,25 +76,25 @@ $form->addElement($fieldset);
 
 if ($form->submitted() && $form->validated()) {
   $duplicate_sql = "SELECT domain_id_public FROM domain WHERE domain_name = '%s'";
-  $duplicate_args = [$_REQUEST['domain_name']];
+  $duplicate_args = [$main->getSessionManager()->filterVariable($_REQUEST['domain_name'])];
 
   if ($domain_id) {
     $duplicate_sql .= " AND domain_id_public <> '%s'";
     $duplicate_args[] = $domain_id;
   }
 
-  $result = Database::query($duplicate_sql, $duplicate_args);
+  $result = $main->getDatabase()->query($duplicate_sql, $duplicate_args);
   $count = $result->num_rows;
   $result->close();
 
   if ($count > 0) {
-    $form->addError('Domain Name exists already.');
+    $main->getErrorHandler()->addError('Domain Name exists already.');
   }
   else {
-    $result = Database::query(
+    $result = $main->getDatabase()->query(
       "SELECT account_id FROM account WHERE account_id_public = '%s'",
       [
-        $_REQUEST['account_id']
+        $main->getSessionManager()->filterVariable($_REQUEST['account_id'])
       ]
     );
 
@@ -116,10 +103,10 @@ if ($form->submitted() && $form->validated()) {
     $result->close();
 
     if ($domain_id) {
-      Database::query(
+      $main->getDatabase()->query(
         "UPDATE domain SET domain_name = '%s', account_id = %s WHERE domain_id_public = '%s'",
         [
-          $_REQUEST['domain_name'],
+          $main->getSessionManager()->filterVariable($_REQUEST['domain_name']),
           $account_id,
           $domain_id
         ]
@@ -128,12 +115,12 @@ if ($form->submitted() && $form->validated()) {
       $_SESSION['messages']['info'][] = 'Domain updated successfully';
     }
     else {
-      Database::query(
+      $main->getDatabase()->query(
         "INSERT INTO domain (domain_id_public, domain_name, account_id, domain_date_added) VALUES
         ('%s', '%s', %s, NOW())",
         [
-          Session::cryptPassword($_REQUEST['domain_name']),
-          $_REQUEST['domain_name'],
+          $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['domain_name'])),
+          $main->getSessionManager()->filterVariable($_REQUEST['domain_name']),
           $account_id
         ]
       );
@@ -146,6 +133,6 @@ if ($form->submitted() && $form->validated()) {
   }
 }
 
-print Theme::htmlDashboardTop('Hosting :: Domains :: ' . ucfirst($suffix));
-print $form->returnHTML();
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardTop('Hosting :: Domains :: ' . ucfirst($suffix));
+print $form->render();
+print $main->getTheme()->htmlDashboardBottom();

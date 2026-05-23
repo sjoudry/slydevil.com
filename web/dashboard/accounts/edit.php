@@ -1,24 +1,18 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
+use SlyDevil\Form\Element\Input;
 use SlyDevil\Form\Element\Select;
-use SlyDevil\Form\Element\Text;
-use Slydevil\Login;
-use SlyDevil\Session;
-use SlyDevil\Theme;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$form = Form::create()
-  ->setAction('/dashboard/accounts/edit.php')
-  ->setName('accounts_edit');
+$form = Form::create('accounts_edit');
 
 $suffix = 'add';
 $button_value = 'Add Account';
@@ -36,12 +30,13 @@ $account_id_master = '';
 $package_id = '';
 $account_billing = '';
 $account_date_added = '';
+$account_id_master_public = '';
 if (isset($_REQUEST['id'])) {
   $suffix = 'edit';
   $button_value = 'Save Changes';
-  $account_id = Env::filterVariable($_REQUEST['id']);
+  $account_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
 
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT *, package_id_public FROM account JOIN package USING (package_id) WHERE account_id_public = '%s'",
     [
       $account_id
@@ -68,111 +63,97 @@ if (isset($_REQUEST['id'])) {
 
   $result->close();
 
-  $account_id_master_public = '';
   if ($account_id_master) {
-    $result = Database::query('SELECT account_id_public FROM account WHERE account_id = %s', [$account_id_master]);
+    $result = $main->getDatabase()->query('SELECT account_id_public FROM account WHERE account_id = %s', [$account_id_master]);
     $parent = $result->fetch_assoc();
     $account_id_master_public = $parent['account_id_public'];
   }
 
-  $hidden = Hidden::create()
-    ->setName('id')
-    ->setValue($account_id);
+  $hidden = Input::create('hidden', 'id')
+    ->setAttribute('value', $account_id);
 
   $form->addElement($hidden);
 }
 
-$name = Text::create()
-  ->setName('account_name')
-  ->setMaxlength(255)
-  ->setValue($account_name)
+$name = Input::create('text', 'account_name')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_name)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Account Name')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->addValidator('existance');
 
-$company = Text::create()
-  ->setName('account_company')
-  ->setMaxlength(255)
-  ->setValue($account_company)
-  ->addLabel('Account Company')
-  ->setClass('form-control');
+$company = Input::create('text', 'account_company')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_company)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Company');
 
-$address1 = Text::create()
-  ->setName('account_street_address1')
-  ->setMaxlength(255)
-  ->setValue($account_street_address1)
-  ->addLabel('Account Street Address 1')
-  ->setClass('form-control');
+$address1 = Input::create('text', 'account_street_address1')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_street_address1)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Street Address 1');
 
-$address2 = Text::create()
-  ->setName('account_street_address2')
-  ->setMaxlength(255)
-  ->setValue($account_street_address2)
-  ->addLabel('Account Street Address 2')
-  ->setClass('form-control');
+$address2 = Input::create('text', 'account_street_address2')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_street_address2)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Street Address 2');
 
-$city = Text::create()
-  ->setName('account_city')
-  ->setMaxlength(255)
-  ->setValue($account_city)
-  ->addLabel('Account City/Town')
-  ->setClass('form-control');
+$city = Input::create('text', 'account_city')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_city)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account City/Town');
 
-$province = Text::create()
-  ->setName('account_province')
-  ->setMaxlength(255)
-  ->setValue($account_province)
-  ->addLabel('Account Province/State')
-  ->setClass('form-control');
+$province = Input::create('text', 'account_province')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_province)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Province/State');
 
-$country = Text::create()
-  ->setName('account_country')
-  ->setMaxlength(255)
-  ->setValue($account_country)
-  ->addLabel('Account Country')
-  ->setClass('form-control');
+$country = Input::create('text', 'account_country')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account_country)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Country');
 
-$postal = Text::create()
-  ->setName('account_postal')
-  ->setMaxlength(10)
-  ->setValue($account_postal)
-  ->addLabel('Account Postal')
-  ->setClass('form-control');
+$postal = Input::create('text', 'account_postal')
+  ->setAttribute('maxlength', 10)
+  ->setAttribute('value', $account_postal)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Postal');
 
-$phone = Text::create()
-  ->setName('account_phone')
-  ->setMaxlength(20)
-  ->setValue($account_phone)
-  ->addLabel('Account Telephone')
-  ->setClass('form-control');
+$phone = Input::create('text', 'account_phone')
+  ->setAttribute('maxlength', 20)
+  ->setAttribute('value', $account_phone)
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Telephone');
 
-$result = Database::query('SELECT account_id_public, account_name FROM account WHERE account_date_deleted IS NULL ORDER BY account_name');
+$result = $main->getDatabase()->query('SELECT account_id_public, account_name FROM account WHERE account_date_deleted IS NULL ORDER BY account_name');
 $accounts = ['0' => '--- Select Parent Account ---'];
 while ($row = $result->fetch_assoc()) {
   $accounts[$row['account_id_public']] = $row['account_name'];
 }
 
-$parent = Select::create()
-  ->setName('account_id_master')
+$parent = Select::create('account_id_master')
   ->setOptions($accounts)
   ->setSelected($account_id_master_public)
   ->addLabel('Account Parent')
-  ->setClass('form-control');
+  ->setAttribute('class', 'form-control');
 
-$result = Database::query('SELECT package_id_public, package_name FROM package WHERE package_date_deleted IS NULL ORDER BY package_name');
+$result = $main->getDatabase()->query('SELECT package_id_public, package_name FROM package WHERE package_date_deleted IS NULL ORDER BY package_name');
 $packages = [];
 while ($row = $result->fetch_assoc()) {
   $packages[$row['package_id_public']] = $row['package_name'];
 }
-$package = Select::create()
-  ->setName('package_id')
+$package = Select::create('package_id')
   ->setOptions($packages)
   ->setSelected($package_id)
   ->addLabel('Account Package')
-  ->setClass('form-control');
+  ->setAttribute('class', 'form-control');
 
-$cycle = Select::create()
-  ->setName('account_billing')
+$cycle = Select::create('account_billing')
   ->setOptions(
     [
       '1' => 'Monthly (12 invoices per year)',
@@ -183,15 +164,11 @@ $cycle = Select::create()
   )
   ->setSelected($account_billing)
   ->addLabel('Account Billing Cycle')
-  ->setClass('form-control');
+  ->setAttribute('class', 'form-control');
 
-$button = Button::create()
-  ->setName('package_' . $suffix . '_submit')
-  ->setValue($button_value);
+$button = Button::create('package_' . $suffix . '_submit', $button_value);
 
-$fieldset = Fieldset::create()
-  ->setId('package_' . $suffix . '_fieldset')
-  ->setLegend(ucfirst($suffix) . ' Package')
+$fieldset = Fieldset::create('package_' . $suffix . '_fieldset', ucfirst($suffix) . ' Package')
   ->addElement($name)
   ->addElement($company)
   ->addElement($address1)
@@ -210,37 +187,37 @@ $form->addElement($fieldset);
 
 if ($form->submitted() && $form->validated()) {
   $duplicate_sql = "SELECT account_id_public FROM account WHERE account_name = '%s'";
-  $duplicate_args = [$_REQUEST['account_name']];
+  $duplicate_args = [$main->getSessionManager()->filterVariable($_REQUEST['account_name'])];
 
   if ($account_id) {
     $duplicate_sql .= " AND account_id_public <> '%s'";
     $duplicate_args[] = $account_id;
   }
 
-  $result = Database::query($duplicate_sql, $duplicate_args);
+  $result = $main->getDatabase()->query($duplicate_sql, $duplicate_args);
   $count = $result->num_rows;
   $result->close();
 
   if ($count > 0) {
-    $form->addError('Account Name exists already.');
+    $main->getErrorHandler()->addError('Account Name exists already.');
   }
   else {
-    $result = Database::query(
+    $result = $main->getDatabase()->query(
       "SELECT package_id FROM package WHERE package_id_public = '%s'",
       [
-        $_REQUEST['package_id']
+        $main->getSessionManager()->filterVariable($_REQUEST['package_id'])
       ]
     );
 
     $package = $result->fetch_assoc();
     $result->close();
-        
+
     $master_id = 0;
     if (isset($_REQUEST['account_id_master'])) {
-      $result = Database::query(
+      $result = $main->getDatabase()->query(
         "SELECT account_id FROM account WHERE account_id_public = '%s'",
         [
-          $_REQUEST['account_id_master']
+          $main->getSessionManager()->filterVariable($_REQUEST['account_id_master'])
         ]
       );
 
@@ -250,21 +227,21 @@ if ($form->submitted() && $form->validated()) {
     }
 
     if ($account_id) {
-      Database::query(
+      $main->getDatabase()->query(
         "UPDATE account SET account_name = '%s', account_company = '%s', account_street_address1 = '%s', account_street_address2 = '%s', account_city = '%s', account_province = '%s', account_postal = '%s', account_country = '%s', account_phone = '%s', account_id_master = %d, package_id = %d, account_billing = %s WHERE account_id_public = '%s'",
         [
-          $_REQUEST['account_name'],
-          $_REQUEST['account_company'],
-          $_REQUEST['account_street_address1'],
-          $_REQUEST['account_street_address2'],
-          $_REQUEST['account_city'],
-          $_REQUEST['account_province'],
-          $_REQUEST['account_postal'],
-          $_REQUEST['account_country'],
-          $_REQUEST['account_phone'],
+          $main->getSessionManager()->filterVariable($_REQUEST['account_name']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_company']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_street_address1']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_street_address2']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_city']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_province']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_postal']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_country']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_phone']),
           (int)$master_id,
           $package['package_id'],
-          $_REQUEST['account_billing'],
+          $main->getSessionManager()->filterVariable($_REQUEST['account_billing']),
           $account_id
         ]
       );
@@ -272,23 +249,23 @@ if ($form->submitted() && $form->validated()) {
       $_SESSION['messages']['info'][] = 'Package updated successfully';
     }
     else {
-      Database::query(
+      $main->getDatabase()->query(
         "INSERT INTO account (account_id_public, account_name, account_company, account_street_address1, account_street_address2, account_city, account_province, account_postal, account_country, account_phone, account_id_master, package_id, account_billing, account_date_added) VALUES
         ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s, %s, NOW())",
         [
-          Session::cryptPassword($_REQUEST['account_name']),
-          $_REQUEST['account_name'],
-          $_REQUEST['account_company'],
-          $_REQUEST['account_street_address1'],
-          $_REQUEST['account_street_address2'],
-          $_REQUEST['account_city'],
-          $_REQUEST['account_province'],
-          $_REQUEST['account_postal'],
-          $_REQUEST['account_country'],
-          $_REQUEST['account_phone'],
+          $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['account_name'])),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_name']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_company']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_street_address1']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_street_address2']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_city']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_province']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_postal']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_country']),
+          $main->getSessionManager()->filterVariable($_REQUEST['account_phone']),
           (int)$master_id,
           $package['package_id'],
-          $_REQUEST['account_billing']
+          $main->getSessionManager()->filterVariable($_REQUEST['account_billing'])
         ]
       );
 
@@ -300,6 +277,6 @@ if ($form->submitted() && $form->validated()) {
   }
 }
 
-print Theme::htmlDashboardTop('Hosting :: Accounts :: ' . ucfirst($suffix));
-print $form->returnHTML();
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardTop('Hosting :: Accounts :: ' . ucfirst($suffix));
+print $form->render();
+print $main->getTheme()->htmlDashboardBottom();

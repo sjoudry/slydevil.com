@@ -24,7 +24,7 @@ class Label extends ElementBase {
   }
 
   public function render() {
-    return '<label' . $this->renderElementAttributes() . '>' . ($this->text ?? '') . '</label>';
+    return '<label' . $this->renderElementAttributes(['id']) . '>' . ($this->text ?? '') . '</label>';
   }
 
   public function setText(string $text): self {
@@ -32,5 +32,5 @@ class Label extends ElementBase {
 
     return $this;
   }
- 
+
 }

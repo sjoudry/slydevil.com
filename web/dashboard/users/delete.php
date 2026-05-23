@@ -46,7 +46,7 @@ else {
 
       $message = Html::create('confirm', 'Are you sure you want to delete user "' . $user['user_username'] . '"?');
 
-      $button = Button::create('user_delete_submit', 'Yes, Delete User', Button::TYPE_SUBMIT);
+      $button = Button::create('user_delete_submit', 'Yes, Delete User');
 
       $fieldset = Fieldset::create('user_delete_fieldset', 'Delete User')
         ->addElement($message)

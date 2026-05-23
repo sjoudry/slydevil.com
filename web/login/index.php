@@ -28,7 +28,7 @@ $password = Input::create('password', 'password')
 
 $reset_link = Html::create('reset_link', "<a href='/login/forgot.php'>Forgot Password?</a>");
 
-$button = Button::create('login_submit', 'Login', Button::TYPE_SUBMIT);
+$button = Button::create('login_submit', 'Login');
 
 $fieldset = Fieldset::create('login_fieldset', 'Dashboard Login')
   ->addElement($username)

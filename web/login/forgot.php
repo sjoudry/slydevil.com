@@ -22,7 +22,7 @@ $username = Input::create('text', 'username')
 
 $login_link = HTML::create('login_link', '<a href="index.php">Back to Login</a>');
 
-$button = Button::create('reset_submit', 'Reset Password', Button::TYPE_SUBMIT);
+$button = Button::create('reset_submit', 'Reset Password');
 
 $fieldset = Fieldset::create('reset_fieldset', 'Forgot/Reset Password')
   ->addElement($username)

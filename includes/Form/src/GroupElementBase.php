@@ -20,6 +20,9 @@ abstract class GroupElementBase extends LabelledElementBase implements GroupElem
   protected ?string $elementSubType = NULL;
 
   public function addElement(ElementInterface $element): static {
+    $element->setAttribute('name', $this->getAttribute('name'));
+    $element->setId($this->id);
+
     $this->elements[] = $element;
 
     return $this;
@@ -78,12 +81,6 @@ abstract class GroupElementBase extends LabelledElementBase implements GroupElem
     }
 
     $output = $this->renderElementTop();
-
-    if ($this->elementSubType == 'checkbox') {
-      $output .= Input::create('hidden', $this->id)
-        ->setAttribute('value', 1)
-        ->render();
-    }
 
     foreach ($this->elements as $element) {
       $output .= $element->render();

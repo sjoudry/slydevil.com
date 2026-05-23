@@ -1,14 +1,13 @@
 <?php
 
-use SlyDevil\Database;
-use Slydevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../includes/init.inc.php');
 
-Login::handleLogin('user');
+$main = new Main();
+$main->getLogin()->handle('user');
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   "SELECT
     *
   FROM
@@ -24,13 +23,13 @@ $result = Database::query(
   WHERE
     invoice_id_public = '%s'",
   [
-    $_REQUEST['id']
+    $main->getSessionManager()->filterVariable($_REQUEST['id'])
   ]
 );
 
 $invoice = $result->fetch_assoc();
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   'SELECT
     *
   FROM
@@ -47,7 +46,7 @@ while ($row = $result->fetch_assoc()) {
   $invoice_data[] = $row;
 }
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   'SELECT
     invoice_id,
     payment_amount
@@ -82,7 +81,7 @@ foreach ($payments as $payment) {
 
 $balance = round($total - $paid, 2);
 
-print Theme::htmlInvoiceTop('Sly Devil :: Invoice :: ' . sprintf('SDWH-%05d', $invoice['invoice_number']));
+print $main->getTheme()->htmlInvoiceTop('Sly Devil :: Invoice :: ' . sprintf('SDWH-%05d', $invoice['invoice_number']));
 
 print "<table border='0' cellpadding='2' cellspacing='1' width='100%' class='invoice'>\n";
 print "<tr>\n";
@@ -124,7 +123,7 @@ if (!empty($invoice['account_city']) || !empty($invoice['account_province']) || 
 
     if (!empty($invoice['account_province'])) {
       $address .= ', ' . $invoice['account_province'];
-            
+
       if (!empty($invoice['account_country'])) {
         $address .= ', ' . $invoice['account_country'];
       }
@@ -138,7 +137,7 @@ if (!empty($invoice['account_city']) || !empty($invoice['account_province']) || 
   else {
     if (!empty($invoice['account_province'])) {
       $address .= $invoice['account_province'];
-            
+
       if (!empty($invoice['account_country'])) {
         $address .= ', ' . $invoice['account_country'];
       }
@@ -172,9 +171,9 @@ $total = 0;
 foreach ($invoice_data as $data) {
   $subtotal = round($data['invoice_data_quantity'] * $data['invoice_data_fee'], 2);
   $total   += $subtotal;
-    
+
   $indent = str_repeat('&nbsp;&nbsp;', $data['invoice_data_indent']);
-    
+
   print "<tr>\n";
   if ($data['invoice_data_quantity'] > 0) {
     print "<td align='right'>" . sprintf('%.2f', round($data['invoice_data_quantity'], 2)) . "</td>\n";
@@ -207,7 +206,7 @@ print "</tr>\n";
 
 $calculated_gst = round(($total * $invoice['invoice_gst_rate']), 2);
 $calculated_pst = round(($total * $invoice['invoice_pst_rate']), 2);
-    
+
 $total += $calculated_gst + $calculated_pst;
 
 if ($invoice['invoice_gst_rate'] > 0) {
@@ -245,7 +244,7 @@ print "</tr>\n";
 $paid = 0;
 foreach ($payments as $payment) {
   $paid += $payment;
-  
+
   print "<tr>\n";
   print "<td></td>\n";
   print "<td align='right'>Payment</td>\n";
@@ -285,4 +284,4 @@ print "<td valign='top' class='sd-address' width='50%'><u>Contact:</u><br/>&nbsp
 print "</tr>\n";
 print "</table>\n";
 
-print Theme::htmlInvoiceBottom();
+print $main->getTheme()->htmlInvoiceBottom();

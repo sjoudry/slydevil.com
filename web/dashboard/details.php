@@ -1,86 +1,78 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Form\Element\Base;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Password;
+use SlyDevil\Form\Element\Input;
 use SlyDevil\Form\Element\Select;
-use SlyDevil\Form\Element\Text;
-use Slydevil\Login;
-use SlyDevil\Session;
-use SlyDevil\Theme;
+use SlyDevil\Form\Utility\ValidatorManager;
+use Slydevil\Site\Login;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../includes/init.inc.php');
 
-Login::handleLogin('user');
+$main = new Main();
+$main->getLogin()->handle('user');
 
-$form = Form::create()
-  ->setAction('/dashboard/details.php')
-  ->setName('account_details');
+$form = Form::create('account_details');
 
-$result = Database::query('SELECT * FROM account JOIN user USING (account_id) WHERE user_id = %s', [Login::$userId]);
+$result = $main->getDatabase()->query(
+  'SELECT * FROM account JOIN user USING (account_id) WHERE user_id = %s',
+  [
+    $main->getLogin()->getUserId()
+  ]
+);
 $account = $result->fetch_assoc();
 
-$company = Text::create()
-  ->setName('account_company')
-  ->setMaxlength(255)
-  ->setValue($account['account_company'])
-  ->addLabel('Account Company')
-  ->setClass('form-control');
+$company = Input::create('text', 'account_company')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_company'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Company');
 
-$address1 = Text::create()
-  ->setName('account_street_address1')
-  ->setMaxlength(255)
-  ->setValue($account['account_street_address1'])
-  ->addLabel('Account Street Address 1')
-  ->setClass('form-control');
+$address1 = Input::create('text', 'account_street_address1')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_street_address1'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Street Address 1');
 
-$address2 = Text::create()
-  ->setName('account_street_address2')
-  ->setMaxlength(255)
-  ->setValue($account['account_street_address2'])
-  ->addLabel('Account Street Address 2')
-  ->setClass('form-control');
+$address2 = Input::create('text', 'account_street_address2')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_street_address2'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Street Address 2');
 
-$city = Text::create()
-  ->setName('account_city')
-  ->setMaxlength(255)
-  ->setValue($account['account_city'])
-  ->addLabel('Account City/Town')
-  ->setClass('form-control');
+$city = Input::create('text', 'account_city')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_city'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account City/Town');
 
-$province = Text::create()
-  ->setName('account_province')
-  ->setMaxlength(255)
-  ->setValue($account['account_province'])
-  ->addLabel('Account Province/State')
-  ->setClass('form-control');
+$province = Input::create('text', 'account_province')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_province'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Province/State');
 
-$country = Text::create()
-  ->setName('account_country')
-  ->setMaxlength(255)
-  ->setValue($account['account_country'])
-  ->addLabel('Account Country')
-  ->setClass('form-control');
+$country = Input::create('text', 'account_country')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['account_country'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Country');
 
-$postal = Text::create()
-  ->setName('account_postal')
-  ->setMaxlength(10)
-  ->setValue($account['account_postal'])
-  ->addLabel('Account Postal')
-  ->setClass('form-control');
+$postal = Input::create('text', 'account_postal')
+  ->setAttribute('maxlength', 10)
+  ->setAttribute('value', $account['account_postal'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Postal');
 
-$phone = Text::create()
-  ->setName('account_phone')
-  ->setMaxlength(20)
-  ->setValue($account['account_phone'])
-  ->addLabel('Account Telephone')
-  ->setClass('form-control');
+$phone = Input::create('text', 'account_phone')
+  ->setAttribute('maxlength', 20)
+  ->setAttribute('value', $account['account_phone'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('Account Telephone');
 
-$cycle = Select::create()
-  ->setName('account_billing')
+$cycle = Select::create('account_billing')
   ->setOptions(
     [
       '1' => 'Monthly (12 invoices per year)',
@@ -91,11 +83,9 @@ $cycle = Select::create()
   )
   ->setSelected($account['account_billing'])
   ->addLabel('Account Billing Cycle')
-  ->setClass('form-control');
+  ->setAttribute('class', 'form-control');
 
-$account_fieldset = Fieldset::create()
-  ->setId('details_fieldset')
-  ->setLegend('Account Details')
+$account_fieldset = Fieldset::create('details_fieldset', 'Account Details')
   ->addElement($company)
   ->addElement($address1)
   ->addElement($address2)
@@ -106,74 +96,66 @@ $account_fieldset = Fieldset::create()
   ->addElement($phone)
   ->addElement($cycle);
 
-$username = Text::create()
-  ->setName('user_username')
-  ->setMaxlength(255)
-  ->setValue($account['user_username'])
+$username = Input::create('text', 'user_username')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['user_username'])
+  ->setAttribute('class', 'form-control')
   ->addLabel('User Email Address')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorEmail();
+  ->addValidator('existance')
+  ->addValidator('email');
 
-$first_name = Text::create()
-  ->setName('user_first_name')
-  ->setMaxlength(255)
-  ->setValue($account['user_first_name'])
-  ->setClass('form-control')
+$first_name = Input::create('text', 'user_first_name')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['user_first_name'])
+  ->setAttribute('class', 'form-control')
   ->addLabel('User First Name')
-  ->addValidatorExistance();
-    
-$last_name = Text::create()
-  ->setName('user_last_name')
-  ->setMaxlength(255)
-  ->setValue($account['user_last_name'])
-  ->setClass('form-control')
-  ->addLabel('User Last Name')
-  ->addValidatorExistance();
+  ->addValidator('existance');
 
-$password = Password::create()
-  ->setName('user_password')
-  ->setMaxlength(16)
+$last_name = Input::create('text', 'user_last_name')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $account['user_last_name'])
+  ->setAttribute('class', 'form-control')
+  ->addLabel('User Last Name')
+  ->addValidator('existance');
+
+$password = Input::create('password', 'user_password')
+  ->setAttribute('maxlength', 16)
+  ->setAttribute('class', 'form-control')
   ->addLabel('User Password')
-  ->setClass('form-control')
-  ->addValidatorContainsLowercase()
-  ->addValidatorContainsNumber()
-  ->addValidatorContainsUppercase()
-  ->addValidatorLengthLong(16)
-  ->addValidatorLengthShort(8)
-  ->addValidatorMatch('user_username', 'User Email Address', Base::VALIDATES_IF_FIELD_NOT_MATCHES)
+  ->addValidator('contains_lowercase')
+  ->addValidator('contains_number')
+  ->addValidator('contains_uppercase')
+  ->addValidator('length_long', NULL, 16)
+  ->addValidator('length_short', NULL, 8)
+  ->addValidator('match', NULL, $username, ValidatorManager::FIELD_NOT_MATCHES)
   ->setDescription('Only fill in this field to change the password.');
 
-$user_fieldset = Fieldset::create()
-  ->setId('user_fieldset')
-  ->setLegend('User Details')
+$user_fieldset = Fieldset::create('user_fieldset', 'User Details')
   ->addElement($username)
   ->addElement($first_name)
   ->addElement($last_name)
   ->addElement($password);
 
-$button = Button::create()
-  ->setName('details_submit')
-  ->setValue('Update');
-    
+$button = Button::create('details_submit', 'Update');
+
 $form->addElement($account_fieldset)
   ->addElement($user_fieldset)
   ->addElement($button);
 
 if ($form->submitted() && $form->validated()) {
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT 1 FROM user WHERE user_username = '%s' AND user_id <> %s",
     [
-      $_REQUEST['user_username'],
-      Login::$userId
+      $main->getSessionManager()->filterVariable($_REQUEST['user_username']),
+      $main->getLogin()->getUserId()
     ]
   );
 
   if ($result->num_rows) {
-    $form->addError('Email Address is already in use.');
+    $main->getErrorHandler()->addError('Email Address is already in use.');
   }
   else {
-    Database::query(
+    $main->getDatabase()->query(
       "UPDATE
         account
       SET
@@ -189,20 +171,20 @@ if ($form->submitted() && $form->validated()) {
       WHERE
         account_id = %s",
       [
-        $_REQUEST['account_company'],
-        $_REQUEST['account_street_address1'],
-        $_REQUEST['account_street_address2'],
-        $_REQUEST['account_city'],
-        $_REQUEST['account_province'],
-        $_REQUEST['account_country'],
-        $_REQUEST['account_postal'],
-        $_REQUEST['account_phone'],
-        $_REQUEST['account_billing'],
+        $main->getSessionManager()->filterVariable($_REQUEST['account_company']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_street_address1']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_street_address2']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_city']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_province']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_country']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_postal']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_phone']),
+        $main->getSessionManager()->filterVariable($_REQUEST['account_billing']),
         $account['account_id']
       ]
     );
-        
-    Database::query(
+
+    $main->getDatabase()->query(
       "UPDATE
         user
       SET
@@ -213,15 +195,19 @@ if ($form->submitted() && $form->validated()) {
       WHERE
         user_id = %s",
       [
-        $_REQUEST['user_username'],
-        $_REQUEST['user_first_name'],
-        $_REQUEST['user_last_name'],
-        (empty($_REQUEST['user_password']) ? $account['user_password'] : Session::cryptPassword($_REQUEST['user_password'])),
-        $account['user_id']
+        $main->getSessionManager()->filterVariable($_REQUEST['user_username']),
+        $main->getSessionManager()->filterVariable($_REQUEST['user_first_name']),
+        $main->getSessionManager()->filterVariable($_REQUEST['user_last_name']),
+        (empty($_REQUEST['user_password'])
+          ? $account['user_password']
+          : $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['user_password']))),
+        $main->getSessionManager()->filterVariable($account['user_id'])
       ]
     );
-        
-    $_SESSION[Login::LOGIN_PASSWORD] = (empty($_REQUEST['user_password']) ? $account['user_password'] : Session::cryptPassword($_REQUEST['user_password']));
+
+    $_SESSION[Login::LOGIN_PASSWORD] = (empty($_REQUEST['user_password'])
+      ? $account['user_password']
+      : $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['user_password'])));
 
     $_SESSION['messages']['info'][] = 'Account updated successfully';
 
@@ -230,8 +216,8 @@ if ($form->submitted() && $form->validated()) {
   }
 }
 
-print Theme::htmlDashboardTop('Sly Devil :: Account Details');
-print $form->returnHTML();
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardTop('Sly Devil :: Account Details');
+print $form->render();
+print $main->getTheme()->htmlDashboardBottom();
 
 ?>

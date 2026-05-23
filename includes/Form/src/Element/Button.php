@@ -12,15 +12,15 @@ class Button extends ElementBase {
 
   public const TYPE_SUBMIT = 'submit';
 
-  protected string $buttonType = self::TYPE_BUTTON;
+  protected string $buttonType = self::TYPE_SUBMIT;
 
   protected ?string $buttonValue = NULL;
 
-  public static function create(string $name, string $value, string $type = self::TYPE_BUTTON): self {
+  public static function create(string $name, string $value, string $type = self::TYPE_SUBMIT): self {
     return new static($name, $value, $type);
   }
 
-  public function __construct(string $name, string $value, string $type = self::TYPE_BUTTON) {
+  public function __construct(string $name, string $value, string $type = self::TYPE_SUBMIT) {
     parent::__construct($name);
 
     $this->elementType = 'button';
@@ -36,7 +36,7 @@ class Button extends ElementBase {
     return $this->buttonValue;
   }
 
-  public function setButtonType(string $type = self::TYPE_BUTTON): self {
+  public function setButtonType(string $type = self::TYPE_SUBMIT): self {
     if ($type != self::TYPE_BUTTON && $type != self::TYPE_RESET && $type != self::TYPE_SUBMIT) {
       $type = self::TYPE_BUTTON;
     }

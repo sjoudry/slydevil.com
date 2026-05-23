@@ -553,8 +553,6 @@ class ValidatorManager {
     $errors = [];
     if (!empty(self::$validators[self::MINIMUM_CHECKED][$name]) && $this->validateValueExistance($name, FALSE)) {
       $config = self::$validators[self::MINIMUM_CHECKED][$name];
-print $name . "\n";
-print_r($_REQUEST);
       if (count($_REQUEST[$name]) < $config['minimum']) {
         $errors[] = $config['error'];
       }

@@ -1,23 +1,17 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
-use SlyDevil\Form\Element\Text;
-use Slydevil\Login;
-use SlyDevil\Session;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$form = Form::create()
-  ->setAction('/dashboard/packages/edit.php')
-  ->setName('packages_edit');
+$form = Form::create('packages_edit');
 
 $suffix = 'add';
 $button_value = 'Add Package';
@@ -29,15 +23,15 @@ $package_domains_fee = '';
 if (isset($_REQUEST['id'])) {
   $suffix = 'edit';
   $button_value = 'Save Changes';
-  $package_id  = Env::filterVariable($_REQUEST['id']);
-  
-  $result = Database::query(
+  $package_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
+
+  $result = $main->getDatabase()->query(
     "SELECT * FROM package WHERE package_id_public = '%s'",
     [
       $package_id
     ]
   );
-            
+
   if ($result->num_rows == 1) {
     $package = $result->fetch_assoc();
 
@@ -48,56 +42,47 @@ if (isset($_REQUEST['id'])) {
   }
 
   $result->close();
-    
-  $hidden = Hidden::create()
-    ->setName('id')
-    ->setValue($package_id);
+
+  $hidden = Input::create('hidden', 'id')
+    ->setAttribute('value', $package_id);
 
   $form->addElement($hidden);
 }
 
-$name = Text::create()
-  ->setName('package_name')
-  ->setMaxlength(255)
-  ->setValue($package_name)
+$name = Input::create('text', 'package_name')
+  ->setAttribute('maxlength', 255)
+  ->setAttribute('value', $package_name)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Package Name')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->addValidator('existance');
 
-$fee = Text::create()
-  ->setName('package_fee')
-  ->setMaxlength(6)
-  ->setValue($package_fee)
+$fee = Input::create('text', 'package_fee')
+  ->setAttribute('maxlength', 6)
+  ->setAttribute('value', $package_fee)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Base Fee')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorNumeric();
+  ->addValidator('existance')
+  ->addValidator('numeric');
 
-$domains = Text::create()
-  ->setName('package_domains')
-  ->setMaxlength(3)
-  ->setValue($package_domains)
+$domains = Input::create('text', 'package_domains')
+  ->setAttribute('maxlength', 3)
+  ->setAttribute('value', $package_domains)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Domains')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorNumeric();
-    
-$extra_domains = Text::create()
-  ->setName('package_domains_fee')
-  ->setMaxlength(6)
-  ->setValue($package_domains_fee)
+  ->addValidator('existance')
+  ->addValidator('numeric');
+
+$extra_domains = Input::create('text', 'package_domains_fee')
+  ->setAttribute('maxlength', 6)
+  ->setAttribute('value', $package_domains_fee)
+  ->setAttribute('class', 'form-control')
   ->addLabel('Extra Domains Fee')
-  ->setClass('form-control')
-  ->addValidatorExistance()
-  ->addValidatorNumeric();
+  ->addValidator('existance')
+  ->addValidator('numeric');
 
-$button = Button::create()
-  ->setName('package_' . $suffix . '_submit')
-  ->setValue($button_value);
+$button = Button::create('package_' . $suffix . '_submit', $button_value);
 
-$fieldset = Fieldset::create()
-  ->setId('package_' . $suffix . '_fieldset')
-  ->setLegend(ucfirst($suffix) . ' Package')
+$fieldset = Fieldset::create('package_' . $suffix . '_fieldset', ucfirst($suffix) . ' Package')
   ->addElement($name)
   ->addElement($fee)
   ->addElement($domains)
@@ -105,7 +90,7 @@ $fieldset = Fieldset::create()
   ->addElement($button);
 
 $form->addElement($fieldset);
- 
+
 if ($form->submitted() && $form->validated()) {
   $duplicate_sql = "SELECT package_id_public FROM package WHERE package_name = '%s'";
   $duplicate_args = [$_REQUEST['package_name']];
@@ -115,51 +100,51 @@ if ($form->submitted() && $form->validated()) {
     $duplicate_args[] = $package_id;
   }
 
-  $result = Database::query($duplicate_sql, $duplicate_args);
-    
+  $result = $main->getDatabase()->query($duplicate_sql, $duplicate_args);
+
   $count = $result->num_rows;
-    
+
   $result->close();
 
   if ($count > 0) {
-    $form->addError('Package Name exists already.');
+    $main->getErrorHandler()->addError('Package Name exists already.');
   }
   else {
     if ($package_id) {
-      Database::query(
+      $main->getDatabase()->query(
         "UPDATE package SET package_name = '%s', package_fee = %.2f, package_domains = %d, package_domains_fee = %.2f WHERE package_id_public = '%s'",
         [
-          $_REQUEST['package_name'],
-          $_REQUEST['package_fee'],
-          $_REQUEST['package_domains'],
-          $_REQUEST['package_domains_fee'],
+          $main->getSessionManager()->filterVariable($_REQUEST['package_name']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_fee']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_domains']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_domains_fee']),
           $package_id
         ]
       );
-            
+
       $_SESSION['messages']['info'][] = 'Package updated successfully';
     }
     else {
-      Database::query(
+      $main->getDatabase()->query(
         "INSERT INTO package (package_id_public, package_name, package_fee, package_domains, package_domains_fee, package_date_added) VALUES
         ('%s', '%s', %.2f, %d, %.2f, NOW())",
         [
-          Session::cryptPassword($_REQUEST['package_name']),
-          $_REQUEST['package_name'],
-          $_REQUEST['package_fee'],
-          $_REQUEST['package_domains'],
-          $_REQUEST['package_domains_fee']
+          $main->getSessionManager()->cryptPassword($main->getSessionManager()->filterVariable($_REQUEST['package_name'])),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_name']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_fee']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_domains']),
+          $main->getSessionManager()->filterVariable($_REQUEST['package_domains_fee'])
         ]
       );
 
       $_SESSION['messages']['info'][] = 'New Package added successfully';
     }
-        
+
     header('Location: /dashboard/packages/');
     exit;
   }
 }
 
-print Theme::htmlDashboardTop('Hosting :: Packages :: ' . ucfirst($suffix));
-print $form->returnHTML();
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardTop('Hosting :: Packages :: ' . ucfirst($suffix));
+print $form->render();
+print $main->getTheme()->htmlDashboardBottom();

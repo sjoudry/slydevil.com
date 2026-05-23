@@ -86,9 +86,8 @@ window.addEventListener('DOMContentLoaded', () => {
 									});
 								}
 								else if (type === 'maximum_checked') {
-									const parent = field.closest('.form-element-group');
-									const inputs = parent.querySelectorAll('input:not([type="hidden"])');
-									Array.from(inputs).forEach((input) => {
+									const fields = document.getElementsByName(id + '[]');
+									Array.from(fields).forEach((input) => {
 										input.addEventListener('change', (e) => { this.validateMaximumChecked(id, e, config); });
 									});
 									formObject.addEventListener('submit', (e) => { this.validateMaximumChecked(id, e, config); });
@@ -98,9 +97,8 @@ window.addEventListener('DOMContentLoaded', () => {
 									formObject.addEventListener('submit', (e) => { this.validateMaximumSelected(id, e, config); });
 								}
 								else if (type === 'minimum_checked') {
-									const parent = field.closest('.form-element-group');
-									const inputs = parent.querySelectorAll('input:not([type="hidden"])');
-									Array.from(inputs).forEach((input) => {
+									const fields = document.getElementsByName(id + '[]');
+									Array.from(fields).forEach((input) => {
 										input.addEventListener('change', (e) => { this.validateMinimumChecked(id, e, config); });
 									});
 									formObject.addEventListener('submit', (e) => { this.validateMinimumChecked(id, e, config); });
@@ -156,8 +154,8 @@ window.addEventListener('DOMContentLoaded', () => {
 				if ((field.value === null || field.value === '')) {
 					if (showError) {
 						this.showInlineError(fieldId, 'existance', '0');
+						event.preventDefault();
 					}
-					event.preventDefault();
 					return false;
 				}
 				if (showError) {

@@ -123,7 +123,7 @@ $account = Select::create('account_id')
   ->addLabel('Account')
   ->addValidator('existance');
 
-$button = Button::create('user_' . $suffix . '_submit', $button_value, Button::TYPE_SUBMIT);
+$button = Button::create('user_' . $suffix . '_submit', $button_value);
 
 $permissions = Group::create('checkbox', 'user_permission')
   ->setAttribute('class', 'hidden-title')

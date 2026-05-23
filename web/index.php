@@ -1,9 +1,8 @@
 <?php
 
-use SlyDevil\Site\Login;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . "/../includes/init.inc.php");
 
-$login = new Login();
-$login->setPasswordSeed(PASSWORD_SEED);
-$login->handle('dashboard', '/dashboard/');
+$main = new Main();
+$main->getLogin()->handle('dashboard', '/dashboard/');

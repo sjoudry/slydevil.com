@@ -54,11 +54,15 @@ class SessionManager {
 			session_start();
 		}
 
+		// Set blank defaults if not set.
+		$remote_address = $_SERVER['REMOTE_ADDR'] ?? '';
+		$http_user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
 		// Destroy session and regenerate if needed.
 		if (
 			(isset($_SESSION[self::SESSION_KEY_UPDATED_NAME]) && ($time - $_SESSION[self::SESSION_KEY_UPDATED_NAME]) > self::SESSION_MAX_AGE) ||
-			(isset($_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME]) && $_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME] != $_SERVER['REMOTE_ADDR']) ||
-			(isset($_SESSION[self::SESSION_KEY_USER_AGENT_NAME]) && $_SESSION[self::SESSION_KEY_USER_AGENT_NAME] != $_SERVER['HTTP_USER_AGENT'])
+			(isset($_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME]) && $_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME] != $remote_address) ||
+			(isset($_SESSION[self::SESSION_KEY_USER_AGENT_NAME]) && $_SESSION[self::SESSION_KEY_USER_AGENT_NAME] != $http_user_agent)
 		) {
 			$_SESSION = [];
 			session_regenerate_id(TRUE);
@@ -72,12 +76,12 @@ class SessionManager {
 		// Keeps track of the ip address of the user and is used above to
 		// determine if the session is being used by more than one ip address.
 		// Multiple ip addresses are not allowed and the session must be destroyed.
-		$_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME] = $_SERVER["REMOTE_ADDR"];
+		$_SESSION[self::SESSION_KEY_IP_ADDRESS_NAME] = $remote_address;
 
 		// Keeps track of the browser of the user and is used above to determine
 		// if the session is being used by more than one browser. Multiple browsers
 		// are not alloed and the session must be destroyed.
-		$_SESSION[self::SESSION_KEY_USER_AGENT_NAME] = $_SERVER["HTTP_USER_AGENT"];
+		$_SESSION[self::SESSION_KEY_USER_AGENT_NAME] = $http_user_agent;
 
 		// Keep track of the creation time of a session and use it to
 		// determine if the session has lapsed. Lapsed sessions cannot be used

@@ -1,22 +1,19 @@
 <?php
 
-use SlyDevil\Database;
-use SlyDevil\Env;
 use SlyDevil\Form\Element\Button;
 use SlyDevil\Form\Element\Fieldset;
 use SlyDevil\Form\Element\Form;
-use SlyDevil\Form\Element\Hidden;
-use SlyDevil\Form\Element\Text;
-use Slydevil\Login;
-use SlyDevil\Theme;
+use SlyDevil\Form\Element\Input;
+use SlyDevil\Site\Main;
 
 include_once(__DIR__ . '/../../../includes/init.inc.php');
 
-Login::handleLogin('admin');
+$main = new Main();
+$main->getLogin()->handle('admin');
 
-$invoice_id = Env::filterVariable($_REQUEST['id']);
+$invoice_id = $main->getSessionManager()->filterVariable($_REQUEST['id']);
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   "SELECT
     invoice_id,
     invoice_gst_rate,
@@ -37,7 +34,7 @@ $result = Database::query(
 
 $invoice = $result->fetch_assoc();
 
-$result = Database::query(
+$result = $main->getDatabase()->query(
   "SELECT
     *
   FROM
@@ -53,8 +50,8 @@ $total = 0;
 while ($row = $result->fetch_assoc()) {
   $total += round(($row['invoice_data_quantity'] * $row['invoice_data_fee']), 2);
 }
-    
-$result = Database::query(
+
+$result = $main->getDatabase()->query(
   "SELECT
     payment_amount
   FROM
@@ -76,49 +73,38 @@ $calculated_pst = round(($total * $invoice['invoice_pst_rate']), 2);
 $total += $calculated_gst + $calculated_pst;
 $balance = round($total - $payments, 2);
 
-$form = Form::create()
-  ->setAction('adjust.php')
-  ->setName('invoice_adjust');
+$form = Form::create('invoice_adjust');
 
-$hidden_invoice = Hidden::create()
-  ->setName('id')
-  ->setValue($invoice_id);
+$hidden_invoice = Input::create('hidden', 'id')
+  ->setAttribute('value', $invoice_id);
 
-$account = Text::create()
-  ->setName('account')
+$account = Input::create('text', 'account')
   ->addLabel('Account')
-  ->setReadOnly(TRUE)
-  ->setValue($invoice['account_name'])
-  ->setClass('form-control');
+  ->setAttribute('readonly', TRUE)
+  ->setAttribute('value', $invoice['account_name'])
+  ->setAttribute('class', 'form-control');
 
-$amount = Text::create()
-  ->setName('amount')
+$amount = Input::create('text', 'amount')
   ->addLabel('Amount')
-  ->setReadOnly(TRUE)
-  ->setValue(sprintf('$%.2f', $balance))
-  ->setClass('form-control');
-    
-$adjustment = Text::create()
-  ->setName('adjustment')
+  ->setAttribute('readonly', TRUE)
+  ->setAttribute('value', sprintf('$%.2f', $balance))
+  ->setAttribute('class', 'form-control');
+
+$adjustment = Input::create('text', 'adjustment')
   ->addLabel('Adjustment')
-  ->setClass('form-control')
+  ->setAttribute('class', 'form-control')
   ->setDescription('The amount entered will be applied exactly as entered, so -6.00 will remove 6 dollars from an invoice and 6.00 will add 6 dollars to the invoice.')
-  ->addValidatorExistance()
-  ->addValidatorNumeric();
+  ->addValidator('existance')
+  ->addValidator('numeric');
 
-$reason = Text::create()
-  ->setName('adjustment_reason')
+$reason = Input::create('text', 'adjustment_reason')
   ->addLabel('Explanation')
-  ->setClass('form-control')
-  ->addValidatorExistance();
+  ->setAttribute('class', 'form-control')
+  ->addValidator('existance');
 
-$button = Button::create()
-  ->setName('payment_submit')
-  ->setValue('Add Adjustment');
+$button = Button::create('payment_submit', 'Add Adjustment');
 
-$fieldset = Fieldset::create()
-  ->setId('payment_fieldset')
-  ->setLegend('Add Adjustment')
+$fieldset = Fieldset::create('payment_fieldset', 'Add Adjustment')
   ->addElement($account)
   ->addElement($amount)
   ->addElement($hidden_invoice)
@@ -129,7 +115,7 @@ $fieldset = Fieldset::create()
 $form->addElement($fieldset);
 
 if ($form->submitted() && $form->validated()) {
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT invoice_id FROM invoice WHERE invoice_id_public = '%s'",
     [
       $invoice_id
@@ -140,17 +126,17 @@ if ($form->submitted() && $form->validated()) {
   $invoice = $invoice['invoice_id'];
   $result->close();
 
-  $result = Database::query(
+  $result = $main->getDatabase()->query(
     "SELECT max(invoice_data_sequence) sequence FROM invoice_data WHERE invoice_id = %s",
     [
       $invoice
     ]
   );
-    
+
   $next = $result->fetch_assoc();
   $next = $next['sequence'];
 
-  Database::query(
+  $main->getDatabase()->query(
     "INSERT INTO invoice_data (invoice_id, invoice_data_sequence, invoice_data_description, invoice_data_quantity, invoice_data_fee, invoice_data_indent) VALUES
     (%s, %s, '', 0, 0, 0)",
     [
@@ -158,8 +144,8 @@ if ($form->submitted() && $form->validated()) {
       ++$next
     ]
   );
-    
-  Database::query(
+
+  $main->getDatabase()->query(
     "INSERT INTO invoice_data (invoice_id, invoice_data_sequence, invoice_data_description, invoice_data_quantity, invoice_data_fee, invoice_data_indent) VALUES
     (%s, %s, '%s', 1, %f, 0)",
     [
@@ -176,6 +162,6 @@ if ($form->submitted() && $form->validated()) {
   exit;
 }
 
-print Theme::htmlDashboardTop('Hosting :: Invoices :: Adjust Invoice');
-print $form->returnHTML();
-print Theme::htmlDashboardBottom();
+print $main->getTheme()->htmlDashboardTop('Hosting :: Invoices :: Adjust Invoice');
+print $form->render();
+print $main->getTheme()->htmlDashboardBottom();

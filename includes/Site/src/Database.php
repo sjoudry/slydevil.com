@@ -61,6 +61,9 @@ class Database {
     $dtz  = new \DateTimeZone(date_default_timezone_get());
     $time = new \DateTime("now", $dtz);
     $offset = $dtz->getOffset($time) / 3600;
+    if ($offset > 0) {
+      $offset = '+' . $offset;
+    }
 
     $this->db->query("SET SESSION time_zone = '" . $offset . ":00'");
   }
